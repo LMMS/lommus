@@ -1,1 +1,30 @@
-{"1":{"title":"Be respectful.","body":"No harassment, bigotry, hate speech, discrimination, flaming, or trolling."},"2":{"title":"No spam.","body":"Do not post anything that could be considered spam. This includes using bot commands in the general chatrooms, text such as copypasta, deliberately-repeated instances of the same message, and unsolicited server links and advertisements."},"3":{"title":"Keep content appropriate.","body":"NSFW or grotesque content is not permitted on this server.  This includes usernames, nicknames, avatars, and custom statuses."},"4":{"title":"No illegal activity.","body":"Do not participate in illicit and illegal activity, such as piracy, discussing how to pirate, discussing how to access illegal drugs, or impersonation."},"5":{"title":"Avoid sensitive topics.","body":"Refrain from discussing hard politics, dark subject matter, or other sensitive topics."},"6":{"title":"English only.","body":"Please keep the majority of chat within the English language.  Exceptions can be made if a certain language is the topic of discussion."}}
+{
+	"1": {
+		"title": "Be respectful.",
+		"body": "No harassment, bigotry, hate speech, discrimination, flaming, or trolling."
+	},
+	"2": {
+		"title": "No spam.",
+		"body": "Do not post anything that could be considered spam. This includes using bot commands in the general chatrooms, text such as copypasta, deliberately-repeated instances of the same message, and unsolicited server links and advertisements."
+	},
+	"3": {
+		"title": "Keep content appropriate.",
+		"body": "NSFW, NSFL, or grotesque shock content is not permitted on this server. This includes usernames, nicknames, avatars, and custom statuses."
+	},
+	"4": {
+		"title": "No illegal activity.",
+		"body": "Do not participate in illicit and illegal activity, such as piracy, discussing how to pirate, discussing how to access illegal drugs, or impersonation. While yes, laws differ country to country, you get the point."
+	},
+	"5": {
+		"title": "Avoid sensitive topics.",
+		"body": "Refrain from discussing hard politics, dark subject matter, or other sensitive topics. This is a music software discord server, not a therapy session or a debate platform."
+	},
+	"6": {
+		"title": "English only.",
+		"body": "Please keep the majority of chat within the English language. Exceptions can be made if a certain language is the topic of discussion. While this is a global server, English is the global business language. If you need help in your native language, ask! Someone might be able to help you in DMs."
+	},
+	"7": {
+		"title": "???",
+		"body": "Don't be the reason we have to add another rule. We do not appreciate users trying to find the absolute edge of the rules above. Please make a good faith effort to follow the obvious intent of these rules. If you need help, ask."
+	}
+}
