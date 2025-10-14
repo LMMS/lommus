@@ -1,0 +1,16 @@
+**Changelog:**
+```
+02/03/22 - new bot framework, /color
+02/14/22 - /color tweak, added /report
+02/22/22 - twosday spam filtering update
+02/27/22 - secret github and file shuffling, user commands
+03/02/22 - /topic command, optimize data acquisition
+04/01/22 - Color randomization toggle
+05/06/22 - /color now has randomize button
+10/03/22 - tweaks, Github issue tag parser for dev channels
+11/10/22 - issue parser works cross server now, rules info embed and commands
+01/28/23 - neuter spam function, change logging
+02/11/23 - add lomboard and change whois to show server profile picture
+5/11/23 - update to DJS14
+```
+<:spoopy:243848405850259456>

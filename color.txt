@@ -1,0 +1,51 @@
+FF4C65 Scarlet
+D1394E Brick
+F56F67 Carnation
+BE544D Chestnut
+E6875C Tangerine
+AF694B Brown Sugar
+F5AE5A Goldenrod
+B38046 Driftwood
+D0C54E Mustard
+9E9741 Brass
+C9DB67 Lemon
+94A347 Olive
+A7DB67 Conifer
+6B8F40 Fern
+7CCD9D Shamrock
+44A16B Meadow
+6EDED5 Aquamarine
+46A19A Turquoise
+5DACEB Cornflower
+3270A3 Lapis
+888CCF Lavender
+5C60A6 Indigo
+C890CD Fuchsia
+994A9F Plum
+AEAEAE Bass
+
+{ label: 'Scarlet', value: 'scarlet' },
+{ label: 'Brick', value: 'brick' },
+{ label: 'Carnation', value: 'carnation' },
+{ label: 'Chestnut', value: 'chestnut' },
+{ label: 'Tangerine', value: 'tangerine' },
+{ label: 'Brown Sugar', value: 'brown_sugar' },
+{ label: 'Goldenrod', value: 'goldenrod' },
+{ label: 'Driftwood', value: 'driftwood' },
+{ label: 'Mustard', value: 'mustard' },
+{ label: 'Brass', value: 'brass' },
+{ label: 'Lemon', value: 'lemon' },
+{ label: 'Olive', value: 'olive' },
+{ label: 'Conifer', value: 'conifer' },
+{ label: 'Fern', value: 'fern' },
+{ label: 'Shamrock', value: 'shamrock' },
+{ label: 'Meadow', value: 'meadow' },
+{ label: 'Aquamarine', value: 'aquamarine' },
+{ label: 'Turquoise', value: 'turquoise' },
+{ label: 'Cornflower', value: 'cornflower' },
+{ label: 'Lapis', value: 'lapis' },
+{ label: 'Lavender', value: 'lavender' },
+{ label: 'Indigo', value: 'indigo' },
+{ label: 'Fuchsia', value: 'fuchsia' },
+{ label: 'Plum', value: 'plum' },
+{ label: 'Bass', value: 'bass' },

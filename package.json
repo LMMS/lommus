@@ -1,0 +1,21 @@
+{
+  "name": "lommus",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lommus.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "slapkev",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.4.7",
+    "humanize-duration": "^3.27.0",
+    "lzma": "^2.3.2",
+    "node-fetch": "^2.6.11"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  }
+}

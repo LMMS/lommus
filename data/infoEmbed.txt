@@ -1,0 +1,6 @@
+This is the official LMMS Discord community! LMMS is a free, open source, multi-platform music creation software. Development is volunteer driven, so if you want to get involved check out the tech category channels!
+
+**New?**
+Be sure to read the rules and grab a color role by using the buttons below! There's also buttons to view the channel directory, download LMMS, and visit the codebase on GitHub.
+
+**Invite:** https://lmms.io/chat
