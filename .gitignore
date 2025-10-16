@@ -2,8 +2,10 @@
 node_modules/
 jspm_packages/
 
-# Config files
+# bun lockfile - `package-lock.json` is the one used
+bun.lock
 
+# Config files
 package-lock.json
 .env
 _win_run.bat
