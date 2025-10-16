@@ -2,6 +2,7 @@
 		script to generate the client side slash commands
 		kev 2021
 */
+require('dotenv').config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
@@ -155,7 +156,7 @@ commands.push(
 	},
 ); */
 
-const rest = new REST({ version: '9' }).setToken(token);
+const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
 
 rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
 	.then(() => console.log('Successfully registered application commands.'))
