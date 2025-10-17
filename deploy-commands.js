@@ -2,11 +2,10 @@
 		script to generate the client side slash commands
 		kev 2021
 */
-require('dotenv').config();
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-const { clientId, guildId, token } = require('./config.json');
+import * as dotenv from 'dotenv';
+dotenv.config({ path: __dirname.concat('/.env') });
+import { SlashCommandBuilder, PermissionFlagsBits, Routes, REST } from 'discord.js';
+import config from "./config.json" with { type: 'json' };
 
 // Manual command builder for now
 const commands = [
@@ -114,22 +113,20 @@ const commands = [
 				.setRequired(true)),
 
 	// server
-	new	SlashCommandBuilder()
+	new SlashCommandBuilder()
 		.setName('server')
 		.setDescription('get info about the server'),
 
 	// bot
-	new	SlashCommandBuilder()
+	new SlashCommandBuilder()
 		.setName('bot')
 		.setDescription('get info about this bot'),
 
 	// topic
-	new	SlashCommandBuilder()
+	new SlashCommandBuilder()
 		.setName('topic')
 		.setDescription('briefly display topic of channel'),
-]
-
-	.map(command => command.toJSON());
+].map(command => command.toJSON());
 
 
 /* Discord JS command handler is a bunch of bullshit
@@ -156,8 +153,11 @@ commands.push(
 	},
 ); */
 
-const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
-
-rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
-	.then(() => console.log('Successfully registered application commands.'))
-	.catch(console.error);
+if (process.env.TOKEN) {
+	const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
+	rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), { body: commands })
+		.then(() => console.log('Successfully registered application commands.'))
+		.catch(console.error);
+} else {
+	console.error("Token is missing!");
+}

@@ -1,7 +1,5 @@
-require('dotenv').config();
 const { EmbedBuilder, Events } = require('discord.js');
 const { green, red } = require('../config.json');
-const fetch = require('node-fetch');
 
 module.exports = {
 
@@ -85,7 +83,8 @@ module.exports = {
 											status = client.emojis.cache.find(emoji => emoji.name === 'spoopy');
 										}
 										// Push new pretty link to output array
-										output.push(`[${status.toString()} ${tag}, @${data.user.login}: ${data.title}](https://github.com/LMMS/lmms/issues/${tag.substring(1)})`);
+										// output.push(`[${status.toString()} ${tag}, @${data.user.login}: ${data.title}](https://github.com/LMMS/lmms/issues/${tag.substring(1)})`);
+										output.push(`[${tag}, @${data.user.login}: ${data.title}](https://github.com/LMMS/lmms/issues/${tag.substring(1)})`);
 									}
 								}
 								if (response.status === 422 || response.status === 403) {

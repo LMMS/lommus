@@ -1,13 +1,14 @@
-import * as dotenv from 'dotenv';
-dotenv.config({ path: __dirname.concat('/.env') });
-import fs from 'node:fs';
-import { Client, Events, Collection, GatewayIntentBits, EmbedBuilder, Partials, ActivityType } from 'discord.js';
-import config from './config.json' with { type: 'json' };
-
+require('dotenv').config();
+const fs = require('fs');
+// const db = require('quick.db');
+const { Client, Events, Collection, GatewayIntentBits, EmbedBuilder, Partials, ActivityType } = require('discord.js');
+const { guildId, green, red } = require('./config.json');
+// const delay = ms => new Promise(res => setTimeout(res, ms));
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.GuildBans,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildModeration,
 		GatewayIntentBits.GuildMessageReactions,
@@ -23,25 +24,14 @@ const client = new Client({
 
 // Fires when bot successfully authenticates via token
 client.once(Events.ClientReady, async () => {
-	// Get guild from client in order to set initial activity status
-	const guild = client.guilds.cache.get(config.guildId);
-
-	if (!client.user) {
-		console.error("client.user not defined! Did the authentication fail?");
-		return;
-	}
-	if (!guild) {
-		console.error("guild is not defined! Is the bot joined to any server?");
-		return;
-	}
-
 	console.log(`Ready! Logged in as ${client.user.tag}`);
-
+	// Get guild from client in order to set initial activity status
+	const guild = client.guilds.cache.get(guildId);
 	client.user.setActivity(`${guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 	// Collect module files from directory
 	client.addons = new Collection();
-	const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
+	const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.js'));
 	// Loop Collection of module files
 	for (const file of addonFiles) {
 		// Map
@@ -60,27 +50,21 @@ client.once(Events.ClientReady, async () => {
 });
 
 // Fires once for each slash command sent by users
-client.on(Events.InteractionCreate, async (interaction) => {
-	if (!interaction || !interaction.channel || !interaction.guild) {
-		console.error("Interaction is not configured correctly! Has slash commands been registered yet?");
-		return;
-	}
-
+client.on(Events.InteractionCreate, async interaction => {
 	// Screen bad command interactions
 	if (!interaction.isChatInputCommand()) return;
 
 	// Restart bot
 	if (interaction.commandName === 'restart') {
 		const embed = new EmbedBuilder()
-			.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) })
-			.setColor(config.red)
+			.setAuthor({ name: 'Restarting', inconURL: interaction.guild.iconURL({ size: 64, dynamic: true }) })
+			.setColor(red)
 			.setDescription('Was I a Good Bot?');
 
 		await interaction.reply({ embeds: [embed], ephemeral: true })
 			// Exit process, loop.sh container will restart bot automatically
 			.then(async () => {
-				console.log("Exiting...");
-				process.exit(0);
+				await process.exit();
 			})
 			.catch(error => {
 				console.error('Unable to restart!', error);
@@ -91,7 +75,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	if (interaction.commandName === 'say') {
 		const msg = interaction.options.getString('message');
 
-		// await interaction.reply({ content: 'Done. Dismiss this message.', ephemeral: true });
+		await interaction.reply({ content: 'Done. Dismiss this message.', ephemeral: true });
 		interaction.channel.send({ content: msg });
 	}
 
@@ -104,10 +88,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			global.colorRandom = !global.colorRandom;
 
 			const embed = new EmbedBuilder()
-				.setColor(config.red)
+				.setColor(red)
 				.setDescription('Color randomization disabled.');
 			if (global.colorRandom) {
-				embed.setColor(config.green);
+				embed.setColor(green);
 				embed.setDescription('Color randomization enabled.');
 			}
 			await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -136,6 +120,6 @@ for (const file of commandFiles) {
 */
 
 // generic error handling
-process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error));
+process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection\n', error));
 
 client.login(process.env.TOKEN);
