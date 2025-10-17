@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-dotenv.config({ path: __dirname.concat('/.env') });
+dotenv.config({ path: __dirname.concat('/.env'), quiet: true });
 import fs from 'node:fs';
 import { Client, Events, Collection, GatewayIntentBits, EmbedBuilder, Partials, ActivityType } from 'discord.js';
 import config from './config.json' with { type: 'json' };
