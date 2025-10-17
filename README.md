@@ -4,6 +4,9 @@
 <img src="lommus.webp" alt="LoMMuS icon" width="60px" /><br>LoMMuS
 </h1>
 <p>Discord bot</p>
+<p>
+<a href="https://discord.gg/3sc5su7"><img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Join the chat at Discord"></a>
+</p>
 
 </div>
 
