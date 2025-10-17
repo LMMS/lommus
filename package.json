@@ -1,13 +1,8 @@
 {
   "name": "lommus",
-  "version": "1.0.0",
-  "description": "",
-  "main": "lommus.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "version": "2.0.0",
   "author": "slapkev",
-  "license": "ISC",
+  "main": "lommus.js",
   "dependencies": {
     "discord.js": "^14.11.0",
     "dotenv": "^16.4.7",
@@ -15,7 +10,20 @@
     "lzma": "^2.3.2",
     "node-fetch": "^2.6.11"
   },
-  "devDependencies": {
-    "eslint": "^9.37.0"
+  "bugs": {
+    "url": "https://github.com/lmms/lommus/issues"
+  },
+  "contributors": [
+    {
+      "name": "Markus Mafz",
+      "url": "https://github.com/headquarter8302"
+    }
+  ],
+  "description": "LoMMuS, the LMMS Discord server's resident bot",
+  "homepage": "https://github.com/lmms/lommus",
+  "license": "ISC",
+  "private": "true",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
