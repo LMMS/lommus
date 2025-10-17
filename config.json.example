@@ -1,0 +1,11 @@
+{
+	"ownerId": "<your discord user ID here>",
+	"clientId": "<the bot's applicaton ID here>",
+	"guildId": "<the server's ID here>",
+	"green": "#2c974f",
+	"blue": "#2d80c0",
+	"yellow": "#ecd10f",
+	"orange": "ec7a0f",
+	"red": "#bb2222",
+	"gray": "#999999"
+}
