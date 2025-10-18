@@ -16,12 +16,30 @@ Feel free to contribute and make PRs.
 
 The old README is located in [README.old.md](README.old.md), which displays notes and commands available at the time.
 
+- [Features](#features)
 - [Deployment](#deployment)
 	- [Setting up auth](#setting-up-auth)
 	- [Setting up bot configuration](#setting-up-bot-configuration)
 	- [Registering slash commands](#registering-slash-commands)
 	- [Running the bot](#running-the-bot)
 - [Developing](#developing)
+	- [TypeScript](#typescript)
+
+## Features
+
+- Useful slash commands for general use and debugging
+  - Print the server's rules
+  - Say something as the bot
+  - Get a list of the server's channels
+  - Apply a color to self
+  - Get the user info of a given user
+  - Get information about the server
+  - Get infomration about the bot
+  - Display the topic of the channel
+- Starboard feature we call "Lomboard"
+- Fetch GitHub issue and PR tickets
+- Basic anti-spam features
+- Server logging functionality
 
 ## Deployment
 
@@ -70,3 +88,9 @@ While it is possible to just run `lommus.js` directly using your favourite runne
 | Run [`_win_run.bat`](scripts/_win_run.bat)<br><details><summary>**Note**</summary> This batch script is very rudimentary, and may not work as you expect it to</details> | Run [`run.sh`](scripts/run.sh) |
 
 ## Developing
+
+The bot uses standard NodeJS APIs and is intended to run normally everywhere using any Node-like runtimes like Deno and Bun. You may use other runtimes/package managers while developing LoMMuS, just make sure to ensure compatibility with standard NodeJS.
+
+### TypeScript
+
+This repository uses TypeScript's type hinting features to ease development. However, please do not use TypeScript code.
