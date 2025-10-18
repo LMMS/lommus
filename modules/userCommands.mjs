@@ -1,4 +1,4 @@
-import { time, hideLinkEmbed, EmbedBuilder, Events } from 'discord.js';
+import { time, hideLinkEmbed, EmbedBuilder, Events, MessageFlags } from 'discord.js';
 import config from '../config.json' with { type: 'json' };
 import fs from 'node:fs';
 import { BotModule } from './util/module.mjs';
@@ -31,7 +31,7 @@ export default class UserCommandsModule extends BotModule {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('Specified user was not found on this server.');
-					return await interaction.reply({ embeds: [embed], ephemeral: true });
+					return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 
 				// Build embed
@@ -64,7 +64,7 @@ export default class UserCommandsModule extends BotModule {
 						name: interaction.guild.name,
 						iconURL: interaction.guild.iconURL(),
 					})
-					.setColor(interaction.guild.me.displayHexColor)
+					// .setColor(interaction.guild.me.displayHexColor)
 					.setThumbnail(interaction.guild.iconURL({ size: 128 }))
 					.setDescription(`${interaction.guild.description}\n${hideLinkEmbed('https://discord.gg/LMMS')}`)
 					.addFields(
@@ -79,7 +79,7 @@ export default class UserCommandsModule extends BotModule {
 						{ name: 'Boost Tier', value: `${interaction.guild.premiumTier}`, inline: true },
 						{ name: 'Bans', value: `${bans.size}`, inline: true },
 					);
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Bot info
@@ -88,11 +88,11 @@ export default class UserCommandsModule extends BotModule {
 				const readme = fs.readFileSync('./README.md', { 'encoding': 'utf-8' });
 
 				const embed = new EmbedBuilder()
-					.setColor(interaction.guild.me.displayHexColor)
-					.setDescription(`**README.md:**\n\`\`\`md\n${readme}\n\`\`\`\n`
-						+ changelog);
+					// .setColor(interaction.guild.me.displayHexColor)
+					.setDescription(`**README.md:**\n\`\`\`md\n${readme.substring(0, 1000)}\n\`\`\`\n`
+						+ changelog.substring(0, 1000));
 
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// topic
@@ -101,7 +101,7 @@ export default class UserCommandsModule extends BotModule {
 					.setColor(this.colors.GREEN)
 					.setDescription('No topic set for this channel.');
 				if (interaction.channel.topic) embed.setDescription(interaction.channel.topic);
-				await interaction.reply({ embeds: [embed], ephemeral: false });
+				await interaction.reply({ embeds: [embed] });
 			}
 		});
 	}
