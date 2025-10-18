@@ -1,6 +1,6 @@
 import { EmbedBuilder, Events } from 'discord.js';
 import config from '../config.json' with { type: 'json' };
-import { BotModule } from './module.mjs';
+import { BotModule } from './util/module.mjs';
 
 export default class AnnoyanceModule extends BotModule {
 	/**

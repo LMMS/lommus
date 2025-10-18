@@ -29,6 +29,27 @@ class LoMMuS {
 	});
 
 	/**
+	 * Has the client finished doing module loading?
+	 *
+	 * @type {boolean}
+	 */
+	_isModuleLoadingDone = false;
+
+	/**
+	 * Array of module names that have been loaded and registered
+	 *
+	 * @type {string[]}
+	 */
+	registeredModules = [];
+
+	/**
+	 * Array of module loaders that have done their loading and registered
+	 *
+	 * @type {['cjs'?, 'esm'?]}
+	 */
+	registeredModuleLoaders = [];
+
+	/**
 	 * Cache color configuration here + TS assertions
 	 * @constant
 	 */
@@ -53,15 +74,19 @@ class LoMMuS {
 	 */
 	loadESModules() {
 		console.log("Initializing ES module loading...");
-		// (new AnnoyanceModule()).init(this.client);
+
 		const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
+
 		for (const file of addonFiles) {
 			const addon = import(`./modules/${file}`);
+
 			addon.then((module) => {
 				try {
 					const instantiatedModule = new module.default();
+
 					instantiatedModule.init(this.client);
-					console.log(instantiatedModule.name + ' module loaded (ESM)');
+					this.#checkLoadedModules("esm", instantiatedModule.name);
+					console.log(`'${instantiatedModule.name}' module loaded (ESM)`);
 				} catch (error) {
 					if (Error.isError(error) && error.message.includes("undefined is not a constructor (evaluating 'new module.default')")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
 				}
@@ -89,13 +114,26 @@ class LoMMuS {
 			try {
 				// @ts-ignore
 				this.client.addons.get(addon.name).execute(this.client);
-				console.log(addon.name + ' module loaded (CJS)');
+				this.#checkLoadedModules("cjs", addon.name);
+				console.log(`'${addon.name}' module loaded (CJS)`);
 			}
 			catch (error) {
-				if (Error.isError(error) && error.message.includes("this.client.addons.get(addon.name).execute is not a function")) console.warn('Ignoring \'' + file + '\' as it is not an initializable CJS module');
+				if (Error.isError(error) && error.message.includes("this.client.addons.get(addon.name).execute")) console.warn('Ignoring \'' + file + '\' as it is not an initializable CJS module');
+				// console.error(error);
 			}
 		}
 		console.log("CJS module loading done!");
+	}
+
+	/**
+	 * Checks all of the modules that have been loaded
+	 *
+	 * @param {'esm' | 'cjs'} moduleLoader The name of the module loader
+	 * @param {string} moduleName The name of the module
+	 */
+	#checkLoadedModules(moduleLoader, moduleName) {
+		if (!this.registeredModuleLoaders.includes(moduleLoader)) this.registeredModuleLoaders.push(moduleLoader);
+		if (!this.registeredModules.includes(moduleName)) this.registeredModules.push((moduleName));
 	}
 
 	/**
