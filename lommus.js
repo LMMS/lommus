@@ -49,28 +49,53 @@ class LoMMuS {
 	}
 
 	/**
-	 * Loads CommonJS-style modules from the `./modules` directory.
+	 * Loads ES-style modules from the `./modules` directory
+	 */
+	loadESModules() {
+		console.log("Initializing ES module loading...");
+		// (new AnnoyanceModule()).init(this.client);
+		const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
+		for (const file of addonFiles) {
+			const addon = import(`./modules/${file}`);
+			addon.then((module) => {
+				try {
+					const instantiatedModule = new module.default();
+					instantiatedModule.init(this.client);
+					console.log(instantiatedModule.name + ' module loaded (ESM)');
+				} catch (error) {
+					if (Error.isError(error) && error.message.includes("undefined is not a constructor (evaluating 'new module.default')")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
+				}
+			});
+		}
+	}
+
+	/**
+	 * Loads CommonJS-style modules from the `./modules` directory
 	 */
 	loadCJSModules() {
+		console.log("Initializing CJS module loading...");
 		// Collect module files from directory
+		// @ts-ignore
 		this.client.addons = new Collection();
 		const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
 		// Loop Collection of module files
 		for (const file of addonFiles) {
 			// Map
 			const addon = require(`./modules/${file}`);
+			// @ts-ignore
 			this.client.addons.set(addon.name, addon);
 
 			// Execute module.export code from module files
 			try {
+				// @ts-ignore
 				this.client.addons.get(addon.name).execute(this.client);
-				console.log(addon.name + ' module loaded.');
+				console.log(addon.name + ' module loaded (CJS)');
 			}
 			catch (error) {
-				console.error(error);
+				if (Error.isError(error) && error.message.includes("this.client.addons.get(addon.name).execute is not a function")) console.warn('Ignoring \'' + file + '\' as it is not an initializable CJS module');
 			}
 		}
-		console.log("Module loading done!");
+		console.log("CJS module loading done!");
 	}
 
 	/**
@@ -98,6 +123,7 @@ class LoMMuS {
 
 			// This needs to be called here so that the guild data cache isn't stale
 			this.loadCJSModules();
+			this.loadESModules();
 		});
 		console.log("Initial bot setup done!");
 	}
@@ -119,7 +145,7 @@ class LoMMuS {
 			// Restart bot
 			if (interaction.commandName === 'restart') {
 				const embed = new EmbedBuilder()
-					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) })
+					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
 					.setColor(this.colors.RED)
 					.setDescription('Was I a Good Bot?');
 
@@ -148,11 +174,13 @@ class LoMMuS {
 				// Color randomization toggle
 				if (toggleType === 'toggle_color') {
 					// flip
+					// TODO: ESM-ize these global vars
 					global.colorRandom = !global.colorRandom;
 
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('Color randomization disabled.');
+					// TODO: ESM-ize this global var
 					if (global.colorRandom) {
 						embed.setColor(this.colors.GREEN);
 						embed.setDescription('Color randomization enabled.');
