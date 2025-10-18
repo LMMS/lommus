@@ -1,5 +1,7 @@
-const { EmbedBuilder, Events } = require('discord.js');
-const { green, red } = require('../config.json');
+import { EmbedBuilder, Events } from 'discord.js';
+import config from '../config.json' with { type: 'json' };
+
+
 
 module.exports = {
 
