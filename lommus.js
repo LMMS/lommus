@@ -25,9 +25,10 @@ const client = new Client({
 // Fires when bot successfully authenticates via token
 client.once(Events.ClientReady, async () => {
 	console.log(`Ready! Logged in as ${client.user.tag}`);
-	// Get guild from client in order to set initial activity status
-	const guild = client.guilds.cache.get(guildId);
-	client.user.setActivity(`${guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
+	// Get guild from client in order to set initial activity status. Use cache, if not in cache fetch from API
+	const guild = client.guilds.cache.get(guildId) ?? await client.guilds.fetch(guildId);
+
+    client.user.setActivity(`${guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 	// Collect module files from directory
 	client.addons = new Collection();

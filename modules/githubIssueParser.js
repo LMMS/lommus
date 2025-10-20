@@ -1,120 +1,107 @@
 require('dotenv').config();
 const { EmbedBuilder, Events } = require('discord.js');
-const { green, red } = require('../config.json');
+const { green, red, github } = require('../config.json');
 const fetch = require('node-fetch');
 
 module.exports = {
+    name: 'Github Issue Parser',
+    description: 'Parses #discriminators and links respective issue/pull requests',
+    listeners: ['messageCreate'],
 
-	name: 'Github Issue Parser',
-	description: 'Parses #discriminators and links respective issue/pull requests',
-	listeners: ['messageCreate'],
+    async execute(client) {
 
-	async execute(client) {
+        client.on(Events.MessageCreate, async message => {
+            if (message.author.bot) return;
 
-		/* ============================
+            // Only process messages containing a #
+            if (!message.content.includes('#')) return;
 
-				Message Create
+            // Remove code blocks and inline code
+            const noBlockCode = message.content.replace(/```[\s\S]*?```/g, '');
+            const noInlineCode = noBlockCode.replace(/`[^`]*`/g, '');
 
-		=============================*/
-		client.on(Events.MessageCreate, async message => {
-			if (message.author.bot) return;
+            // Match patterns:
+            // 1. #123
+            // 2. repo#123
+            // 3. org/repo#123
+            const regex = /(?:(?<org>[A-Za-z0-9_.-]+)\/(?<repo>[A-Za-z0-9_.-]+)|(?<repoOnly>[A-Za-z0-9_.-]+))?#(?<issue>\d{3,5})(?!\d)/g;
 
-			// Only look at messages containing a pound sign
-			if (message.content.includes('#')) {
-				// Remove code blocks and their contents
-				const noBlockCode = message.content.replace(/(```(.+?)```)/gms, '');
-				// Remove inline code snippets and their contents
-				const noCode = noBlockCode.replace(/(`(.+?)`)/gms, '');
-				// Check remaining text for valid tags
-				const match = noCode.match(/#\d{3,5}/g);
-				// Make sure there are tags
-				if (match && match.length) {
-					// Kind of jank, convert to set to remove duplicates
-					const unique = [...new Set(match)];
-					// Convert right back to array for array operations
-					const tags = Array.from(unique);
-					// Initiate array for output
-					const output = [];
-					// Loop tags
-					for (const tag of tags) {
-						// Build fetch parameters
-						const url = `https://api.github.com/repos/LMMS/lmms/issues/${tag.substring(1)}`;
-						const options = {
-							method: 'GET',
-							headers: {
-								'Content-Type': 'application/json',
-								'Accept': 'application/vnd.github.v3+json',
-								'Authorization': `token ${process.env.PATOKEN}`,
-							},
-						};
-						// Fetch data from URL
-						await fetch(url, options)
-							.then(async (response) => {
-								// get json response and make sure status ok
-								const data = await response.json();
-								if (response.status === 200 || response.status === 304) {
+            const matches = [...noInlineCode.matchAll(regex)];
 
-									// Check for valid JSON response
-									if (data.user.login) {
-										// Initialize emoji variable
-										let status;
+            if (!matches.length) return;
 
-										// If Else stack to set status to proper emoji. should probably be a switch case in hindsight
-										if (data.pull_request === undefined && data.state === 'open') {
-											status = client.emojis.cache.find(emoji => emoji.name === 'issue_opened');
-										}
-										else if (data.pull_request === undefined && data.state_reason === 'completed') {
-											status = client.emojis.cache.find(emoji => emoji.name === 'issue_closed');
-										}
-										else if (data.pull_request === undefined && data.state_reason === 'not_planned') {
-											status = client.emojis.cache.find(emoji => emoji.name === 'issue_not_planned');
-										}
-										else if (data.pull_request.url && data.draft) {
-											status = client.emojis.cache.find(emoji => emoji.name === 'pr_draft');
-										}
-										else if (data.pull_request.url && data.state === 'open') {
-											status = client.emojis.cache.find(emoji => emoji.name === 'pr_opened');
-										}
-										else if (data.pull_request.url && data.pull_request.merged_at) {
-											status = client.emojis.cache.find(emoji => emoji.name === 'pr_merged');
-										}
-										else if (data.pull_request.url && data.state === 'closed') {
-											status = client.emojis.cache.find(emoji => emoji.name === 'pr_closed');
-										}
-										else {
-											status = client.emojis.cache.find(emoji => emoji.name === 'spoopy');
-										}
-										// Push new pretty link to output array
-										output.push(`[${status.toString()} ${tag}, @${data.user.login}: ${data.title}](https://github.com/LMMS/lmms/issues/${tag.substring(1)})`);
-									}
-								}
-								if (response.status === 422 || response.status === 403) {
-									const errorEmbed = new EmbedBuilder()
-										.setColor(red)
-										.setDescription('Slow down. The GitHub API is displeased.');
-									// Send it
-									return await message.channel.send({ embeds: [errorEmbed] });
-								}
-							})
-							.catch((err) => {
-								console.log(err);
-							});
+            const output = [];
+            const seen = new Set();
 
-						if (output.length > 9) {
-							break;
-						}
-					}
-					if (output.length) {
-						// Build output embed
-						const parseEmbed = new EmbedBuilder()
-							.setColor(green)
-							.setDescription(output.join('\n'));
-						// Send it
-						return await message.channel.send({ embeds: [parseEmbed] });
-					}
-				}
-			}
+            for (const m of matches) {
+                const org = m.groups.org || github.allowedOrgs[0];
+                const repo = m.groups.repo || m.groups.repoOnly || github.defaultRepo;
+                const issue = parseInt(m.groups.issue);
 
-		});
-	},
+                if (!github.allowedOrgs.includes(org)) continue;
+
+                const key = `${org}/${repo}#${issue}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+
+                const url = `https://api.github.com/repos/${org}/${repo}/issues/${issue}`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Authorization': `token ${process.env.PATOKEN}`,
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (response.status === 200 || response.status === 304) {
+                        if (data.user?.login) {
+                            let status;
+
+                            if (!data.pull_request && data.state === 'open') {
+                                status = client.emojis.cache.find(e => e.name === 'issue_opened');
+                            } else if (!data.pull_request && data.state_reason === 'completed') {
+                                status = client.emojis.cache.find(e => e.name === 'issue_closed');
+                            } else if (!data.pull_request && data.state_reason === 'not_planned') {
+                                status = client.emojis.cache.find(e => e.name === 'issue_not_planned');
+                            } else if (data.pull_request?.url && data.draft) {
+                                status = client.emojis.cache.find(e => e.name === 'pr_draft');
+                            } else if (data.pull_request?.url && data.state === 'open') {
+                                status = client.emojis.cache.find(e => e.name === 'pr_opened');
+                            } else if (data.pull_request?.url && data.pull_request?.merged_at) {
+                                status = client.emojis.cache.find(e => e.name === 'pr_merged');
+                            } else if (data.pull_request?.url && data.state === 'closed') {
+                                status = client.emojis.cache.find(e => e.name === 'pr_closed');
+                            } else {
+                                status = client.emojis.cache.find(e => e.name === 'spoopy');
+                            }
+
+                            output.push(
+                                `[${status ?? ''} [${org}/${repo}] #${issue}, @${data.user.login}: ${data.title}](${data.html_url})`
+                            );
+                        }
+                    } else if (response.status === 422 || response.status === 403) {
+                        const errorEmbed = new EmbedBuilder()
+                            .setColor(red)
+                            .setDescription('Slow down. The GitHub API is displeased.');
+                        return await message.channel.send({ embeds: [errorEmbed] });
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+
+                if (output.length > 9) break;
+            }
+
+            if (output.length) {
+                const parseEmbed = new EmbedBuilder()
+                    .setColor(green)
+                    .setDescription(output.join('\n'));
+                await message.channel.send({ embeds: [parseEmbed] });
+            }
+        });
+    },
 };

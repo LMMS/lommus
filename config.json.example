@@ -1,0 +1,10 @@
+{
+  "_IMPORTANT": "rename this to config.json and change these default values."
+  "guildId": <discord guild id>,
+  "green": "#2C9750",
+  "red": "#D22137",
+  "github": {
+    "allowedOrgs": ["LMMS"],
+    "defaultRepo": "lmms"
+  }
+}
