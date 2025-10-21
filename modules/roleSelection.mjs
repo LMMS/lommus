@@ -1,14 +1,78 @@
-const { EmbedBuilder, Events, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, ButtonBuilder } = require('discord.js');
-const { guildId, green } = require('../config.json');
+import { EmbedBuilder, Events, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, ButtonBuilder } from 'discord.js';
+// const { guildId, green } = require('../config.json');
+import config from '../config.json' with { type: 'json' };
+import { BotModule } from './util/module.mjs';
 
-module.exports = {
+export default class RoleSelectionModule extends BotModule {
+	/**
+	 * Cache color configuration here + TS assertions
+	 * @constant
+	 */
+	colors = {
+		RED: /** @type {`#${string}`} */ (config.red),
+		GREEN: /** @type {`#${string}`} */ (config.green)
+	};
 
-	name: 'Role Selector',
-	description: 'Enables role selection.',
-	listeners: ['interactionCreate'],
+	guildId = config.guildId;
 
-	async execute(client) {
-		const guild = await client.guilds.cache.get(guildId);
+	constructor () {
+		super(
+			'Role Selector',
+			'Enables role selection.',
+			['interactionCreate']
+		);
+	}
+
+	async roleColor(interaction) {
+		if (global.colorRandom === false) {
+			const embed = new EmbedBuilder()
+				.setColor(this.colors.GREEN)
+				.setDescription('**Here are your color options:**\n' + roleMap);
+
+			const select = new StringSelectMenuBuilder()
+				.setCustomId('select')
+				.setPlaceholder('Pick a color')
+				.addOptions(
+					roleArray.map((role, index) => {
+						return {
+							label: role.name,
+							value: index,
+						};
+					}),
+				);
+
+			const selectRow = new ActionRowBuilder()
+				.addComponents(select);
+
+			const ifColor = interaction.member.roles.cache.some(role => role.name.startsWith('🎨'));
+
+			const random = new ButtonBuilder()
+				.setCustomId('random')
+				.setLabel('Randomizer')
+				.setStyle(ButtonStyle.Primary);
+
+			const clear = new ButtonBuilder()
+				.setCustomId('clear')
+				.setLabel('Remove Color Role')
+				.setStyle(ButtonStyle.Danger)
+				.setDisabled(!ifColor);
+
+			const buttonRow = new ActionRowBuilder()
+				.addComponents(random, clear);
+
+			await interaction.reply({ embeds: [embed], components: [selectRow, buttonRow], ephemeral: true });
+		}
+		else {
+			const embed = new EmbedBuilder()
+				.setColor(this.colors.GREEN)
+				.setDescription('There is no color in LMMS server.');
+			return await interaction.reply({ embeds: [embed], ephemeral: true });
+		}
+	}
+
+	/** @param {import('discord.js').Client} client */
+	init(client) {
+		const guild = client.guilds.cache.get(this.guildId);
 		global.colorRandom = false;
 
 		const roleArray = guild.roles.cache
@@ -20,82 +84,35 @@ module.exports = {
 		if (roleMap.length > 4000) roleMap = 'Too many roles to display';
 		if (!roleMap) roleMap = 'No roles';
 
-		async function roleColor(interaction) {
-			if (global.colorRandom === false) {
-				const embed = new EmbedBuilder()
-					.setColor(green)
-					.setDescription('**Here are your color options:**\n' + roleMap);
-
-				const select = new StringSelectMenuBuilder()
-					.setCustomId('select')
-					.setPlaceholder('Pick a color')
-					.addOptions(
-						roleArray.map((role, index) => {
-							return {
-								label: role.name,
-								value: index,
-							};
-						}),
-					);
-				const selectRow = new ActionRowBuilder()
-					.addComponents(select);
-
-				const ifColor = interaction.member.roles.cache.some(role => role.name.startsWith('🎨'));
-
-				const random = new ButtonBuilder()
-					.setCustomId('random')
-					.setLabel('Randomizer')
-					.setStyle(ButtonStyle.Primary);
-
-				const clear = new ButtonBuilder()
-					.setCustomId('clear')
-					.setLabel('Remove Color Role')
-					.setStyle(ButtonStyle.Danger)
-					.setDisabled(!ifColor);
-
-				const buttonRow = new ActionRowBuilder()
-					.addComponents(random, clear);
-
-				await interaction.reply({ embeds: [embed], components: [selectRow, buttonRow], ephemeral: true });
-			}
-			else {
-				const embed = new EmbedBuilder()
-					.setColor(green)
-					.setDescription('There is no color in LMMS server.');
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
-			}
-		}
-
-
 		client.on(Events.InteractionCreate, async (interaction) => {
 			if (interaction.isStringSelectMenu()) {
 				if (interaction.customId === 'select') {
 					const embed = new EmbedBuilder()
-						.setColor(green)
+						.setColor(this.colors.GREEN)
 						.setDescription(`You changed your color to <@&${interaction.values[0]}>.`);
 
 					await interaction.member.roles.remove(roleArray.map(role => { return role.id; }));
 					await interaction.member.roles.add(interaction.values);
-					await interaction.update({ embeds: [embed], components: [], ephemeral:true });
+					await interaction.update({ embeds: [embed], components: [], ephemeral: true });
 				}
 			}
 
 			if (interaction.isButton()) {
 				// THIS IS FIRED FROM INFOEMBED.JS GENERATED EMBED
 				if (interaction.customId === 'roles') {
-					roleColor(interaction);
+					this.roleColor(interaction);
 				}
 				if (interaction.customId === 'clear') {
 					await interaction.member.roles.remove(roleArray.map(role => { return role.id; }));
 					const embed = new EmbedBuilder()
-						.setColor(green)
+						.setColor(this.colors.GREEN)
 						.setDescription('You removed your color role.');
 					return await interaction.update({ embeds: [embed], components: [], ephemeral: true });
 				}
 				if (interaction.customId === 'random') {
 					const addRole = roleArray.random();
 					const embed = new EmbedBuilder()
-						.setColor(green)
+						.setColor(this.colors.GREEN)
 						.setDescription(`You look good in ${addRole}.`);
 
 					await interaction.member.roles.remove(roleArray.map(role => { return role.id; }));
@@ -109,13 +126,13 @@ module.exports = {
 					const row = new ActionRowBuilder()
 						.addComponents(reroll);
 
-					await interaction.update({ embeds: [embed], components: [row], ephemeral:true });
+					await interaction.update({ embeds: [embed], components: [row], ephemeral: true });
 				}
 			}
 
 			if (interaction.isChatInputCommand()) {
 				if (interaction.commandName === 'color') {
-					roleColor(interaction);
+					this.roleColor(interaction);
 				}
 			}
 		});
@@ -135,5 +152,5 @@ module.exports = {
 				}
 			}
 		});
-	},
-};
+	}
+}
