@@ -186,13 +186,13 @@ class LoMMuS {
 				if (toggleType === 'toggle_color') {
 					// flip
 					// TODO: ESM-ize these global vars
-					global.colorRandom = !global.colorRandom;
+					globalThis.colorRandom = !globalThis.colorRandom;
 
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('Color randomization disabled.');
 					// TODO: ESM-ize this global var
-					if (global.colorRandom) {
+					if (globalThis.colorRandom) {
 						embed.setColor(this.colors.GREEN);
 						embed.setDescription('Color randomization enabled.');
 					}

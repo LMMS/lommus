@@ -24,7 +24,7 @@ export default class RoleSelectionModule extends BotModule {
 	}
 
 	async roleColor(interaction) {
-		if (global.colorRandom === false) {
+		if (globalThis.colorRandom === false) {
 			const embed = new EmbedBuilder()
 				.setColor(this.colors.GREEN)
 				.setDescription('**Here are your color options:**\n' + roleMap);
@@ -73,7 +73,7 @@ export default class RoleSelectionModule extends BotModule {
 	/** @param {import('discord.js').Client} client */
 	init(client) {
 		const guild = client.guilds.cache.get(this.guildId);
-		global.colorRandom = false;
+		globalThis.colorRandom = false;
 
 		const roleArray = guild.roles.cache
 			.filter(role => role.name.startsWith('🎨'))
@@ -140,7 +140,7 @@ export default class RoleSelectionModule extends BotModule {
 		client.on(Events.MessageCreate, async message => {
 			if (message.author.bot) return;
 
-			if (global.colorRandom === true) {
+			if (globalThis.colorRandom === true) {
 				const ifColor = await message.member.roles.cache
 					.filter(role => role.name.startsWith('🎨'));
 
