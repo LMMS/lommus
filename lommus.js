@@ -1,8 +1,11 @@
-import * as dotenv from 'dotenv';
-dotenv.config({ path: __dirname.concat('/.env'), quiet: true });
-import { ActivityType, Client, Collection, EmbedBuilder, Events, GatewayIntentBits, Partials } from 'discord.js';
+import { createRequire } from 'module';
 import fs from 'node:fs';
+import { spawn } from 'node:child_process';
 import config from './config.json' with { type: 'json' };
+
+import * as dotenv from 'dotenv';
+dotenv.config({ quiet: true });
+import { ActivityType, Client, EmbedBuilder, Events, GatewayIntentBits, MessageFlags, Partials } from 'discord.js';
 
 console.log("LoMMuS is initializing...");
 
@@ -43,13 +46,6 @@ class LoMMuS {
 	registeredModules = [];
 
 	/**
-	 * Array of module loaders that have done their loading and registered
-	 *
-	 * @type {['cjs'?, 'esm'?]}
-	 */
-	registeredModuleLoaders = [];
-
-	/**
 	 * Cache color configuration here + TS assertions
 	 * @constant
 	 */
@@ -69,70 +65,48 @@ class LoMMuS {
 		this.client.login(token);
 	}
 
+	/** Restarts the bot */
+	restart() {
+		spawn(process.argv0, process.argv.slice(1), {
+			detached: true,   // don’t detach from the parent
+			stdio: ['ignore', process.stdout, process.stderr],  // keep terminal connection
+		}).unref();
+
+		process.exit(0);
+	}
+
 	/**
 	 * Loads ES-style modules from the `./modules` directory
 	 */
 	loadESModules() {
 		console.log("Initializing ES module loading...");
 
-		const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
+		const moduleFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
 
-		for (const file of addonFiles) {
-			const addon = import(`./modules/${file}`);
+		for (const file of moduleFiles) {
+			const module = import(`./modules/${file}`);
 
-			addon.then((module) => {
+			module.then((module) => {
 				try {
+					/** @type {InstanceType<typeof import('./modules/util/module.mjs').BotModule>} */
 					const instantiatedModule = new module.default();
 
 					instantiatedModule.init(this.client);
-					this.#checkLoadedModules("esm", instantiatedModule.name);
-					console.log(`'${instantiatedModule.name}' module loaded (ESM)`);
+					this.#checkLoadedModules(instantiatedModule.name);
+					console.log(`'${instantiatedModule.name}' module loaded`);
 				} catch (error) {
-					if (Error.isError(error) && error.message.includes("undefined is not a constructor (evaluating 'new module.default')")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
+					if (error instanceof Error && error.message.includes("undefined is not a constructor (evaluating 'new module.default')")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
 				}
 			});
 		}
 	}
 
 	/**
-	 * Loads CommonJS-style modules from the `./modules` directory
-	 */
-	loadCJSModules() {
-		console.log("Initializing CJS module loading...");
-		// Collect module files from directory
-		// @ts-ignore
-		this.client.addons = new Collection();
-		const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
-		// Loop Collection of module files
-		for (const file of addonFiles) {
-			// Map
-			const addon = require(`./modules/${file}`);
-			// @ts-ignore
-			this.client.addons.set(addon.name, addon);
-
-			// Execute module.export code from module files
-			try {
-				// @ts-ignore
-				this.client.addons.get(addon.name).execute(this.client);
-				this.#checkLoadedModules("cjs", addon.name);
-				console.log(`'${addon.name}' module loaded (CJS)`);
-			}
-			catch (error) {
-				if (Error.isError(error) && error.message.includes("this.client.addons.get(addon.name).execute")) console.warn('Ignoring \'' + file + '\' as it is not an initializable CJS module');
-				// console.error(error);
-			}
-		}
-		console.log("CJS module loading done!");
-	}
-
-	/**
 	 * Checks all of the modules that have been loaded
 	 *
-	 * @param {'esm' | 'cjs'} moduleLoader The name of the module loader
 	 * @param {string} moduleName The name of the module
 	 */
-	#checkLoadedModules(moduleLoader, moduleName) {
-		if (!this.registeredModuleLoaders.includes(moduleLoader)) this.registeredModuleLoaders.push(moduleLoader);
+	#checkLoadedModules(moduleName) {
 		if (!this.registeredModules.includes(moduleName)) this.registeredModules.push((moduleName));
 	}
 
@@ -160,7 +134,6 @@ class LoMMuS {
 			this.client.user.setActivity(`${guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 			// This needs to be called here so that the guild data cache isn't stale
-			this.loadCJSModules();
 			this.loadESModules();
 		});
 		console.log("Initial bot setup done!");
@@ -182,19 +155,18 @@ class LoMMuS {
 
 			// Restart bot
 			if (interaction.commandName === 'restart') {
+				console.log("Restarting...");
 				const embed = new EmbedBuilder()
 					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
 					.setColor(this.colors.RED)
-					.setDescription('Was I a Good Bot?');
+					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
 
-				await interaction.reply({ embeds: [embed], ephemeral: true })
-					// Exit process, loop.sh container will restart bot automatically
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
 					.then(async () => {
-						console.log("Exiting...");
-						process.exit(0);
+						this.restart();
 					})
 					.catch(error => {
-						console.error('Unable to restart!', error);
+						throw new Error(`Unable to restart properly! ${error}`);
 					});
 			}
 
@@ -202,6 +174,7 @@ class LoMMuS {
 			if (interaction.commandName === 'say') {
 				const msg = interaction.options.getString('message') ?? "";
 
+				interaction.reply({ content: 'Message said', flags: MessageFlags.Ephemeral });
 				// @ts-ignore
 				await interaction.channel.send({ content: msg });
 			}
@@ -235,4 +208,4 @@ class LoMMuS {
 process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error));
 
 // final token check
-(process.env.TOKEN) ? new LoMMuS(process.env.TOKEN) : console.error("Token not found in env!");
+export const LOMMUS = (process.env.TOKEN) ? new LoMMuS(process.env.TOKEN) : console.error("Token not found in env!");
