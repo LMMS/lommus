@@ -196,7 +196,7 @@ class LoMMuS {
 						embed.setColor(this.colors.GREEN);
 						embed.setDescription('Color randomization enabled.');
 					}
-					await interaction.reply({ embeds: [embed], ephemeral: true });
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 			}
 		});

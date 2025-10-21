@@ -1,4 +1,4 @@
-import { blockQuote, EmbedBuilder, Events, AuditLogEvent } from 'discord.js';
+import { blockQuote, EmbedBuilder, Events, AuditLogEvent, MessageFlags } from 'discord.js';
 // const { green, yellow, orange, red, gray } = require('../config.json');
 import config from "../config.json" with { type: 'json' };
 import { BotModule } from './util/module.mjs';
@@ -52,14 +52,14 @@ export default class ModerationModule extends BotModule {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('Message must not be empty.');
-					return await interaction.reply({ embeds: [embed], ephemeral: true });
+					return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 
 				if (!this.urlReg.test(reportMessage)) {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('Message option must be a link to message.');
-					return await interaction.reply({ embeds: [embed], ephemeral: true });
+					return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 
 				const modEmbed = new EmbedBuilder()
@@ -78,7 +78,7 @@ export default class ModerationModule extends BotModule {
 					.setColor(this.colors.GREEN)
 					.setDescription('Report successfully sent to moderation.');
 
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 		});
 		/* ============================

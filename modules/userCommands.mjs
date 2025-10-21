@@ -53,7 +53,7 @@ export default class UserCommandsModule extends BotModule {
 						{ name: 'Server Roles', value: targetUser.roles.cache.sort((a, b) => parseFloat(b.position) - parseFloat(a.position)).map(r => `${r}`).filter(f => f != '@everyone').join(', ') },
 					);
 				}
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Server info

@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, ButtonBuilder } from 'discord.js';
+import { EmbedBuilder, Events, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, ButtonBuilder, MessageFlags } from 'discord.js';
 // const { guildId, green } = require('../config.json');
 import config from '../config.json' with { type: 'json' };
 import { BotModule } from './util/module.mjs';
@@ -60,13 +60,13 @@ export default class RoleSelectionModule extends BotModule {
 			const buttonRow = new ActionRowBuilder()
 				.addComponents(random, clear);
 
-			await interaction.reply({ embeds: [embed], components: [selectRow, buttonRow], ephemeral: true });
+			await interaction.reply({ embeds: [embed], components: [selectRow, buttonRow], flags: MessageFlags.Ephemeral });
 		}
 		else {
 			const embed = new EmbedBuilder()
 				.setColor(this.colors.GREEN)
 				.setDescription('There is no color in LMMS server.');
-			return await interaction.reply({ embeds: [embed], ephemeral: true });
+			return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 		}
 	}
 
@@ -93,7 +93,7 @@ export default class RoleSelectionModule extends BotModule {
 
 					await interaction.member.roles.remove(roleArray.map(role => { return role.id; }));
 					await interaction.member.roles.add(interaction.values);
-					await interaction.update({ embeds: [embed], components: [], ephemeral: true });
+					await interaction.update({ embeds: [embed], components: [], flags: MessageFlags.Ephemeral });
 				}
 			}
 
@@ -107,7 +107,7 @@ export default class RoleSelectionModule extends BotModule {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.GREEN)
 						.setDescription('You removed your color role.');
-					return await interaction.update({ embeds: [embed], components: [], ephemeral: true });
+					return await interaction.update({ embeds: [embed], components: [], flags: MessageFlags.Ephemeral });
 				}
 				if (interaction.customId === 'random') {
 					const addRole = roleArray.random();
@@ -126,7 +126,7 @@ export default class RoleSelectionModule extends BotModule {
 					const row = new ActionRowBuilder()
 						.addComponents(reroll);
 
-					await interaction.update({ embeds: [embed], components: [row], ephemeral: true });
+					await interaction.update({ embeds: [embed], components: [row], flags: MessageFlags.Ephemeral });
 				}
 			}
 

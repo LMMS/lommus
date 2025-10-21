@@ -57,7 +57,7 @@ export default class InfoEmbedModule extends BotModule {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('No.');
-					return interaction.reply({ embeds: [embed], ephemeral: true });
+					return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 				// read text file for info embed contents
 				const infoBody = await fs.readFileSync('./data/infoEmbed.txt', { 'encoding': 'utf-8' });
@@ -105,7 +105,7 @@ export default class InfoEmbedModule extends BotModule {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('No.');
-					return interaction.reply({ embeds: [embed], ephemeral: true });
+					return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 				// get command args
 				const editNumber = interaction.options.getInteger('number');
@@ -136,7 +136,7 @@ export default class InfoEmbedModule extends BotModule {
 				}
 
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Rule # conditional
@@ -152,7 +152,7 @@ export default class InfoEmbedModule extends BotModule {
 					return await interaction.reply({ embeds: [embed], ephemeral: false });
 				}
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Rule List conditional: either a button or a command. screen both
@@ -177,7 +177,7 @@ export default class InfoEmbedModule extends BotModule {
 					.setTitle('Server Rules')
 					.setDescription(numberToEmoji(rulesList));
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Channel list conditional: either a button or a command. screen both
@@ -224,7 +224,7 @@ export default class InfoEmbedModule extends BotModule {
 					.setTitle('Channel Directory')
 					.setDescription(channels);
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 		});
 	}
