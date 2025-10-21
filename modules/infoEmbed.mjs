@@ -22,7 +22,7 @@ export default class InfoEmbedModule extends BotModule {
 
 	constructor () {
 		super(
-			'Role Selector',
+			'Info Embed',
 			'Handles #info embed, embed buttons, and breakout commands.',
 			['interactionCreate, messageCreate']
 		);
