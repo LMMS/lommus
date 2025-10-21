@@ -1,32 +1,45 @@
-const { blockQuote, time } = require('@discordjs/builders');
-const { EmbedBuilder, Events, ActivityType, AuditLogEvent } = require('discord.js');
-const { green, red, gray } = require('../config.json');
-const my_lzma = require('lzma');
+import { blockQuote, time, EmbedBuilder, Events, ActivityType, AuditLogEvent } from 'discord.js';
+import config from '../config.json' with { type: 'json' };
+import * as my_lzma from 'lzma';
+import { BotModule } from './util/module.mjs';
 
-module.exports = {
+export default class LoggingModule extends BotModule {
+	/**
+	 * Cache color configuration here + TS assertions
+	 * @constant
+	 */
+	colors = {
+		RED: /** @type {`#${string}`} */ (config.red),
+		GREEN: /** @type {`#${string}`} */ (config.green),
+		GRAY: /** @type {`#${string}`} */ (config.gray)
+	};
+	constructor () {
+		super(
+			'Logging',
+			'The Big Brother module.',
+			['messageUpdate', 'messageDelete', 'guildMemberAdd', 'guildMemberRemove', 'guildMemberUpdate', 'roleCreate', 'roleDelete']
+		);
+	}
 
-	name: 'Logging',
-	description: 'The Big Brother module.',
-	listeners: ['messageUpdate', 'messageDelete', 'guildMemberAdd', 'guildMemberRemove', 'guildMemberUpdate', 'roleCreate', 'roleDelete'],
-
-	async execute(client) {
+	/** @param {import('discord.js').Client} client */
+	init(client) {
 		/* =========================
 
 			Message Update Logging
 
 		===========================*/
-		client.on(Events.messageUpdate, async (past, current) => {
+		client.on(Events.MessageUpdate, async (past, current) => {
 			if (current.partial) await current.fetch();
 
 			if (current.author.bot) return;
 			if (current.channel.name === 'admin' || current.channel.name === 'log') return;
 
 			const embed = new EmbedBuilder()
-				.setColor(gray)
+				.setColor(this.colors.GRAY)
 				.setTimestamp()
 				.setAuthor({
 					name: `Message Edited (#${current.channel.name})`,
-					iconURL: current.guild.iconURL({ size: 64, dynamic: true }),
+					iconURL: current.guild.iconURL({ size: 64 }) ?? '',
 				})
 				.setFooter({ text: `Member: ${current.member.id}` });
 
@@ -51,12 +64,12 @@ module.exports = {
 				}
 
 				embed.setDescription(`${current.author} ${current.author.tag}`
-												+ blockQuote(`${oldSmall}\n\n${newSmall}`));
+					+ blockQuote(`${oldSmall}\n\n${newSmall}`));
 			}
 			// Old message is unchached
 			else {
 				embed.setDescription(`${current.author} ${current.author.tag}`
-												+ blockQuote(`${newSmall} (uncached)`));
+					+ blockQuote(`${newSmall} (uncached)`));
 			}
 
 			await current.guild.channels.cache.find(channel => channel.name === 'logs')
@@ -85,11 +98,11 @@ module.exports = {
 			}
 
 			const embed = new EmbedBuilder()
-				.setColor(gray)
+				.setColor(this.colors.GRAY)
 				.setTimestamp()
 				.setAuthor({
 					name: `Message Deleted (#${message.channel.name})`,
-					iconURL: message.guild.iconURL({ size: 64, dynamic: true }),
+					iconURL: message.guild.iconURL({ size: 64 }) ?? '',
 				})
 				.setFooter({ text: `Member: ${message.author.id}` })
 				.setDescription(`${message.author} ${message.author.tag}
@@ -109,11 +122,11 @@ module.exports = {
 			member.client.user.setActivity(`${member.guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 			const embed = new EmbedBuilder()
-				.setColor(green)
+				.setColor(this.colors.GREEN)
 				.setTimestamp()
 				.setAuthor({
 					name: 'Member Join',
-					iconURL: member.guild.iconURL({ size: 64, dynamic: true }),
+					iconURL: member.guild.iconURL({ size: 64 }) ?? '',
 				})
 				.setFooter({ text: `Member: ${member.user.id}` })
 				.setDescription(`${member.user} ${member.user.tag}`)
@@ -137,11 +150,11 @@ module.exports = {
 			member.client.user.setActivity(`${member.guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 			const embed = new EmbedBuilder()
-				.setColor(red)
+				.setColor(this.colors.RED)
 				.setTimestamp()
 				.setAuthor({
 					name: 'Member Leave',
-					iconURL: member.guild.iconURL({ size: 64, dynamic: true }),
+					iconURL: member.guild.iconURL({ size: 64 }) ?? '',
 				})
 				.setFooter({ text: `Member: ${member.user.id}` })
 				.setDescription(`${member.user} ${member.user.tag}`)
@@ -163,7 +176,7 @@ module.exports = {
 				.setTimestamp()
 				.setAuthor({
 					name: 'Member Updated',
-					iconURL: current.guild.iconURL({ size: 64, dynamic: true }),
+					iconURL: current.guild.iconURL({ size: 64 }) ?? '',
 				})
 				.setFooter({ text: `Member: ${current.id}` })
 				.setDescription(`${current.user} ${current.user.tag}`)
@@ -194,8 +207,7 @@ module.exports = {
 					name: 'Username Changed:',
 					value: `${past.username} -> ${current.username}`,
 				});
-			}
-			else {
+			} else {
 				return;
 			}
 			await current.guild.channels.cache.find(channel => channel.name === 'logs')
@@ -208,13 +220,13 @@ module.exports = {
 			Role Create Logging
 
 		===========================*/
-		client.on(Events.RoleCreate, async (role) => {
+		client.on(Events.GuildRoleCreate, async (role) => {
 			const embed = new EmbedBuilder()
-				.setColor(green)
+				.setColor(this.colors.GREEN)
 				.setTimestamp()
 				.setAuthor({
 					name: 'Role Created',
-					iconURL: role.guild.iconURL({ size: 64, dynamic: true }),
+					iconURL: role.guild.iconURL({ size: 64 }) ?? '',
 				})
 				.setFooter({ text: 'Member: ???' })
 				.setDescription(`${role} created by ???`);
@@ -240,14 +252,14 @@ module.exports = {
 			Role Delete Logging
 
 		===========================*/
-		client.on(Events.RoleDelete, async (role) => {
+		client.on(Events.GuildRoleDelete, async (role) => {
 
 			const embed = new EmbedBuilder()
-				.setColor(red)
+				.setColor(this.colors.RED)
 				.setTimestamp()
 				.setAuthor({
 					name: 'Role Deleted',
-					iconURL: role.guild.iconURL({ size: 64, dynamic: true }),
+					iconURL: role.guild.iconURL({ size: 64 }) ?? '',
 				})
 				.setFooter({ text: 'Member: ???' })
 				.setDescription(`${role} deleted by ???`);
@@ -266,5 +278,5 @@ module.exports = {
 			await role.guild.channels.cache.find(channel => channel.name === 'logs')
 				.send({ embeds: [embed] });
 		});
-	},
-};
+	}
+}
