@@ -38,7 +38,7 @@ module.exports = {
                 const repo = m.groups.repo || m.groups.repoOnly || github.defaultRepo;
                 const issue = parseInt(m.groups.issue);
 
-                if (!github.allowedOrgs.includes(org)) continue;
+                if (!github.allowedOrgs.map((str) => str.toLowerCase()).includes(org.toLowerCase())) continue;
 
                 const key = `${org}/${repo}#${issue}`;
                 if (seen.has(key)) continue;
