@@ -5,7 +5,9 @@
   "main": "lommus.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node lommus.js"
+    "start": "node lommus.js",
+    "daemon-win": "powershell -File ./scripts/run.ps1",
+    "daemon-linux": "bash ./scripts./run.sh"
   },
   "author": "slapkev",
   "license": "ISC",
@@ -14,7 +16,8 @@
     "dotenv": "^16.4.7",
     "humanize-duration": "^3.33.1",
     "lzma": "^2.3.2",
-    "node-fetch": "^2.6.11"
+    "node-fetch": "^2.6.11",
+    "pm2": "^6.0.13"
   },
   "devDependencies": {
     "eslint": "^9.37.0"
