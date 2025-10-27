@@ -7,6 +7,8 @@ import * as dotenv from 'dotenv';
 dotenv.config({ quiet: true });
 import { ActivityType, Client, EmbedBuilder, Events, GatewayIntentBits, MessageFlags, Partials } from 'discord.js';
 
+import RoleSelectionModule from './modules/roleSelection.mjs';
+
 console.log("LoMMuS is initializing...");
 
 class LoMMuS {
@@ -186,13 +188,13 @@ class LoMMuS {
 				if (toggleType === 'toggle_color') {
 					// flip
 					// TODO: ESM-ize these global vars
-					globalThis.colorRandom = !globalThis.colorRandom;
+					RoleSelectionModule.colorRandom = !RoleSelectionModule.colorRandom;
 
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
 						.setDescription('Color randomization disabled.');
 					// TODO: ESM-ize this global var
-					if (globalThis.colorRandom) {
+					if (RoleSelectionModule.colorRandom) {
 						embed.setColor(this.colors.GREEN);
 						embed.setDescription('Color randomization enabled.');
 					}

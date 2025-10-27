@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, ButtonBuilder, MessageFlags } from 'discord.js';
+import { EmbedBuilder, Events, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, ButtonBuilder, MessageFlags, ButtonInteraction, Collection, Role, ChatInputCommandInteraction } from 'discord.js';
 // const { guildId, green } = require('../config.json');
 import config from '../config.json' with { type: 'json' };
 import { BotModule } from './util/module.mjs';
@@ -15,6 +15,8 @@ export default class RoleSelectionModule extends BotModule {
 
 	guildId = config.guildId;
 
+	static colorRandom = false;
+
 	constructor () {
 		super(
 			'Role Selector',
@@ -23,8 +25,17 @@ export default class RoleSelectionModule extends BotModule {
 		);
 	}
 
-	async roleColor(interaction) {
-		if (globalThis.colorRandom === false) {
+	/**
+	 * Role color helper function
+	 *
+	 * @async
+	 * @param {ButtonInteraction<import('discord.js').CacheType> | ChatInputCommandInteraction<import('discord.js').CacheType>} interaction
+	 * @param {string} roleMap
+	 * @param {Collection<string, Role>} roleArray
+	 * @returns {Promise<unknown>}
+	 */
+	async roleColor(interaction, roleMap, roleArray) {
+		if (this.colorRandom === false) {
 			const embed = new EmbedBuilder()
 				.setColor(this.colors.GREEN)
 				.setDescription('**Here are your color options:**\n' + roleMap);
@@ -73,7 +84,7 @@ export default class RoleSelectionModule extends BotModule {
 	/** @param {import('discord.js').Client} client */
 	init(client) {
 		const guild = client.guilds.cache.get(this.guildId);
-		globalThis.colorRandom = false;
+		this.colorRandom = false;
 
 		const roleArray = guild.roles.cache
 			.filter(role => role.name.startsWith('🎨'))
@@ -93,14 +104,14 @@ export default class RoleSelectionModule extends BotModule {
 
 					await interaction.member.roles.remove(roleArray.map(role => { return role.id; }));
 					await interaction.member.roles.add(interaction.values);
-					await interaction.update({ embeds: [embed], components: [], flags: MessageFlags.Ephemeral });
+					await interaction.update({ embeds: [embed], components: [] });
 				}
 			}
 
 			if (interaction.isButton()) {
 				// THIS IS FIRED FROM INFOEMBED.JS GENERATED EMBED
 				if (interaction.customId === 'roles') {
-					this.roleColor(interaction);
+					this.roleColor(interaction, roleMap, roleArray);
 				}
 				if (interaction.customId === 'clear') {
 					await interaction.member.roles.remove(roleArray.map(role => { return role.id; }));
@@ -126,13 +137,13 @@ export default class RoleSelectionModule extends BotModule {
 					const row = new ActionRowBuilder()
 						.addComponents(reroll);
 
-					await interaction.update({ embeds: [embed], components: [row], flags: MessageFlags.Ephemeral });
+					await interaction.update({ embeds: [embed], components: [row] });
 				}
 			}
 
 			if (interaction.isChatInputCommand()) {
 				if (interaction.commandName === 'color') {
-					this.roleColor(interaction);
+					this.roleColor(interaction, roleMap, roleArray);
 				}
 			}
 		});
@@ -140,8 +151,8 @@ export default class RoleSelectionModule extends BotModule {
 		client.on(Events.MessageCreate, async message => {
 			if (message.author.bot) return;
 
-			if (globalThis.colorRandom === true) {
-				const ifColor = await message.member.roles.cache
+			if (this.colorRandom === true) {
+				const ifColor = message.member.roles.cache
 					.filter(role => role.name.startsWith('🎨'));
 
 				const addRole = roleArray.random();
