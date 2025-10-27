@@ -24,7 +24,10 @@
   "license": "ISC",
   "private": "true",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node lommus.js",
+    "daemon-win": "powershell -File ./scripts/run.ps1",
+    "daemon-linux": "bash ./scripts./run.sh"
   },
   "devDependencies": {
     "@types/lzma": "^2.3.0",
