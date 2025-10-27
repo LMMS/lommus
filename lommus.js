@@ -97,7 +97,7 @@ class LoMMuS {
 					this.#checkLoadedModules(instantiatedModule.name);
 					console.log(`'${instantiatedModule.name}' module loaded`);
 				} catch (error) {
-					if (error instanceof Error && error.message.includes("undefined is not a constructor (evaluating 'new module.default')")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
+					if (error instanceof Error && error.message.includes("is not a constructor")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
 				}
 			});
 		}
