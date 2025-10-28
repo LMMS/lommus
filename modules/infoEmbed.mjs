@@ -1,15 +1,40 @@
-const { EmbedBuilder, Events, ChannelType, ActionRowBuilder, ButtonStyle, ButtonBuilder, PermissionFlagsBits } = require('discord.js');
-const { green, red } = require('../config.json');
-const fs = require('fs');
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import fs from 'node:fs';
+import config from '../config.json' with { type: 'json' };
+import { BotModule } from './util/module.mjs';
 
-module.exports = {
+export default class InfoEmbedModule extends BotModule {
+	/**
+	 * Cache color configuration here + TS assertions
+	 * @constant
+	 */
+	colors = {
+		RED: /** @type {`#${string}`} */ (config.red),
+		GREEN: /** @type {`#${string}`} */ (config.green)
+	};
 
-	name: 'Role Selector',
-	description: 'Handles #info embed, embed buttons, and breakout commands.',
-	listeners: ['interactionCreate, messageCreate'],
+	/**
+	 * List of rules from the JSON file
+	 *
+	 * @type {*}
+	 */
+	rulelist = JSON.parse(fs.readFileSync('./data/rules.json', { 'encoding': 'utf-8' }));
 
-	async execute(client) {
-		// Convenient integer to UTF emoji converter function
+	constructor () {
+		super(
+			'Info Embed',
+			'Handles #info embed, embed buttons, and breakout commands.',
+			['interactionCreate, messageCreate']
+		);
+	}
+	/** @param {import('discord.js').Client} client */
+	init(client) {
+		/**
+		 * Convenient integer to UTF emoji converter function
+		 *
+		 * @param {string} string String to
+		 * @returns {string} Replaced string
+		 */
 		function numberToEmoji(string) {
 			return string
 				.replace(/0/g, '0️⃣')
@@ -24,23 +49,22 @@ module.exports = {
 				.replace(/9/g, '9️⃣');
 		}
 
-		// get rest of embed content from JSON file
-		const rulelist = await JSON.parse(fs.readFileSync('./data/rules.json', { 'encoding': 'utf-8' }));
-
 		// When client fires interactionCreate (redundant across all modules)
 		client.on(Events.InteractionCreate, async (interaction) => {
 			// manual stealth command for making info embed
 			if (interaction.isChatInputCommand() && interaction.commandName === 'infoembed') {
 				if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
-					const embed = new EmbedBuilder().setColor(red).setDescription('No.');
-					return interaction.reply({ embeds: [embed], ephemeral: true });
+					const embed = new EmbedBuilder()
+						.setColor(this.colors.RED)
+						.setDescription('No.');
+					return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 				// read text file for info embed contents
 				const infoBody = await fs.readFileSync('./data/infoEmbed.txt', { 'encoding': 'utf-8' });
 				const embed = new EmbedBuilder()
 					.setTitle('Welcome!')
 					.setThumbnail(interaction.guild.iconURL({ size: 128, dynamic: true }))
-					.setColor(green)
+					.setColor(this.colors.GREEN)
 					.setDescription(infoBody);
 
 				const rules = new ButtonBuilder()
@@ -78,8 +102,10 @@ module.exports = {
 			}
 			if (interaction.isChatInputCommand() && interaction.commandName === 'editrule') {
 				if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
-					const embed = new EmbedBuilder().setColor(red).setDescription('No.');
-					return interaction.reply({ embeds: [embed], ephemeral: true });
+					const embed = new EmbedBuilder()
+						.setColor(this.colors.RED)
+						.setDescription('No.');
+					return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 				// get command args
 				const editNumber = interaction.options.getInteger('number');
@@ -88,29 +114,29 @@ module.exports = {
 
 				// prebuild embed
 				const embed = new EmbedBuilder()
-					.setColor(red)
+					.setColor(this.colors.RED)
 					.setDescription('Something went wrong.');
 
 				// if rule exists, edit it
-				if (editNumber <= Object.keys(rulelist).length && editNumber > 0) {
+				if (editNumber <= Object.keys(this.rulelist).length && editNumber > 0) {
 					// edit rule title
 					if (editType === 'ruleEditTitle') {
-						embed.setDescription(`Rule ${editNumber} title changed. \n\n**Old title:** \n${rulelist[editNumber].title} \n\n**New title:**\n${editContent}`);
-						rulelist[editNumber].title = editContent;
+						embed.setDescription(`Rule ${editNumber} title changed. \n\n**Old title:** \n${this.rulelist[editNumber].title} \n\n**New title:**\n${editContent}`);
+						this.rulelist[editNumber].title = editContent;
 					}
 					// edit rule body
 					if (editType === 'ruleEditBody') {
-						embed.setDescription(`Rule ${editNumber} body changed. \n\n**Old title:** \n${rulelist[editNumber].body} \n\n**New title:**\n${editContent}`);
-						rulelist[editNumber].body = editContent;
+						embed.setDescription(`Rule ${editNumber} body changed. \n\n**Old title:** \n${this.rulelist[editNumber].body} \n\n**New title:**\n${editContent}`);
+						this.rulelist[editNumber].body = editContent;
 					}
 					// change embed color
-					embed.setColor(green);
+					embed.setColor(this.colors.GREEN);
 					// write resulting file for persistence
-					fs.writeFileSync('./data/rules.json', JSON.stringify(rulelist));
+					fs.writeFileSync('./data/rules.json', JSON.stringify(this.rulelist));
 				}
 
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Rule # conditional
@@ -118,24 +144,25 @@ module.exports = {
 				const number = interaction.options.getInteger('number');
 				// prebuild embed
 				const embed = new EmbedBuilder()
-					.setColor(red)
+					.setColor(this.colors.RED)
 					.setDescription('Enter a valid rule number.');
-				if (number <= Object.keys(rulelist).length && number > 0) {
-					embed.setColor(green);
-					embed.setDescription(numberToEmoji(`${number} **${rulelist[number].title}**\n${rulelist[number].body}`));
+				if (number <= Object.keys(this.rulelist).length && number > 0) {
+					embed.setColor(this.colors.GREEN);
+					embed.setDescription(numberToEmoji(`${number} **${this.rulelist[number].title}**\n${this.rulelist[number].body}`));
 					return await interaction.reply({ embeds: [embed], ephemeral: false });
 				}
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
+
 			// Rule List conditional: either a button or a command. screen both
 			if (interaction.isButton() && interaction.customId === 'rules' || interaction.isCommand() && interaction.commandName === 'rulelist') {
 				// init and set first line of embed content
 				let rulesList = 'Please follow these rules if you want to stay on this server.\n';
 				// loop rules JSON object's toplevel keys
-				for (const key in rulelist) {
+				for (const key in this.rulelist) {
 					// push each key's sub key and sub value to the embed content variable
-					rulesList += `\n${key} **${rulelist[key].title}**\n  ${rulelist[key].body}\n`;
+					rulesList += `\n${key} **${this.rulelist[key].title}**\n  ${this.rulelist[key].body}\n`;
 				}
 
 				// push final addendum to output variable
@@ -145,12 +172,12 @@ module.exports = {
 				if (rulesList.length > 4096) rulesList = 'Character limit exceeded.';
 				// build embed. send embed description through number to emoji function
 				const embed = new EmbedBuilder()
-					.setColor(green)
+					.setColor(this.colors.GREEN)
 					.setTimestamp()
 					.setTitle('Server Rules')
 					.setDescription(numberToEmoji(rulesList));
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Channel list conditional: either a button or a command. screen both
@@ -182,22 +209,23 @@ module.exports = {
 						// push channel and topic to output variable
 						channels += `\n${channel} - ${topic}`;
 					}
+					return await interaction.reply({ content: 'Embed generated', flags: MessageFlags.Ephemeral });
 				}
 				// push final addendum to output variable
 				channels += '\n\n*The TECH categories have strict topics and offtopic chat will not be tolerated.'
-									+ ' Additionally, in those channels it\'s best to follow the https://dontasktoask.com/ and https://nohello.net/ guidelines.*';
+					+ ' Additionally, in those channels it\'s best to follow the https://dontasktoask.com/ and https://nohello.net/ guidelines.*';
 
 				// embed character limit sanity check
 				if (channels.length > 4096) channels = 'Character limit exceeded.';
 				// build embed. send embed description through number to emoji function
 				const embed = new EmbedBuilder()
-					.setColor(green)
+					.setColor(this.colors.GREEN)
 					.setTimestamp()
 					.setTitle('Channel Directory')
 					.setDescription(channels);
 				// send embed as interaction reply
-				return await interaction.reply({ embeds: [embed], ephemeral: true });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 		});
-	},
-};
+	}
+}

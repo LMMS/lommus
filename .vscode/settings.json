@@ -1,4 +1,8 @@
 {
+	// preferred package manager
 	"npm.packageManager": "npm",
-	"npm.scriptRunner": "npm"
+	"npm.scriptRunner": "npm",
+
+	// style options
+	"javascript.preferences.quoteStyle": "single",
 }

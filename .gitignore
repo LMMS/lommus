@@ -8,7 +8,6 @@ bun.lock
 # Config files
 package-lock.json
 .env
-_win_run.bat
 config.json
 spam2.json
 /commands

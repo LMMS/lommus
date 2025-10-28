@@ -1,17 +1,28 @@
-// const { blockQuote } = require('@discordjs/builders');
-const { EmbedBuilder, Events, PermissionFlagsBits } = require('discord.js');
-const { red } = require('../config.json');
+import { EmbedBuilder, Events, PermissionFlagsBits } from 'discord.js';
+import config from '../config.json' with { type: 'json' };
 // const badURLs = require('../spam.json');
-const wait = require('node:timers/promises').setTimeout;
-const urlReg = /https?:\/\/\w+/;
+import { setTimeout as wait } from 'node:timers/promises';
+import { BotModule } from './util/module.mjs';
 
-module.exports = {
+export default class WatchdogModule extends BotModule {
+	/**
+	 * Cache color configuration here + TS assertions
+	 * @constant
+	 */
+	colors = {
+		RED: /** @type {`#${string}`} */ (config.red)
+	};
 
-	name: 'Watchdog',
-	description: 'oh no you didn\'t.',
-	listeners: ['messageCreate'],
+	/**
+	 * The RegExp for URLs
+	 */
+	urlReg = RegExp(/https?:\/\/\w+/, "i");
 
-	async execute(client) {
+	constructor () {
+		super('Watchdog', "oh no you didn't.", ['messageCreate']);
+	}
+	/** @param {import('discord.js').Client} client */
+	init(client) {
 
 		/*	// Search Functions
 		const multiSearchOr = (text, searchWords) => (
@@ -48,12 +59,7 @@ module.exports = {
 			}
 		} */
 
-		/* ============================
-
-				Message Create
-
-		=============================*/
-		client.on(Events.MessageCreate, async message => {
+		client.on(Events.MessageCreate, async (message) => {
 			if (message.author.bot) return;
 
 			/* // Spam filtering
@@ -88,15 +94,20 @@ module.exports = {
 			} */
 
 			// resouces image/link handler
-			if (message.channel.name === 'resources') {
+			if ('name' in message.channel && message.channel.name === 'resources') {
 				// is it a staff? does it have no url and attachments?
-				if (message.member.permissions.has(PermissionFlagsBits.BanMembers) || !urlReg.test(message.content) && message.attachments.size > 0) {
+				if (
+					message.member
+					&& message.member.permissions.has(PermissionFlagsBits.BanMembers)
+					|| !this.urlReg.test(message.content)
+					&& message.attachments.size > 0
+				) {
 					message.react('✅');
 				}
 				else {
 					message.delete();
 					const embed = new EmbedBuilder()
-						.setColor(red)
+						.setColor(this.colors.RED)
 						.setDescription('This channel is for sharing presets, samples, and LMMS themes you have the legal rights to share. This is not a discussion or request channel. Please do not share binaries or links to external resources.');
 
 					message.channel.send({ embeds: [embed] })
@@ -106,7 +117,6 @@ module.exports = {
 						});
 				}
 			}
-
 		});
-	},
-};
+	}
+}

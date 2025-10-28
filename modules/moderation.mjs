@@ -1,22 +1,45 @@
-const { blockQuote } = require('@discordjs/builders');
-const { EmbedBuilder, Events, AuditLogEvent } = require('discord.js');
-const { green, yellow, orange, red, gray } = require('../config.json');
-const urlReg = /https?:\/\/\w+/;
-const my_lzma = require('lzma');
+import { blockQuote, EmbedBuilder, Events, AuditLogEvent, MessageFlags } from 'discord.js';
+// const { green, yellow, orange, red, gray } = require('../config.json');
+import config from "../config.json" with { type: 'json' };
+import { BotModule } from './util/module.mjs';
+import * as my_lzma from 'lzma'
 
-module.exports = {
+export default class ModerationModule extends BotModule {
+	/**
+	 * Cache color configuration here + TS assertions
+	 * @constant
+	 */
+	colors = {
+		RED: /** @type {`#${string}`} */ (config.red),
+		GREEN: /** @type {`#${string}`} */ (config.green),
+		YELLOW: /** @type {`#${string}`} */ (config.yellow),
+		ORANGE: /** @type {`#${string}`} */ (config.orange),
+		GRAY: /** @type {`#${string}`} */ (config.gray)
+	};
 
-	name: 'Moderation',
-	description: 'The Git Shit Din:tm:',
-	listeners: ['messageCreate'],
+	/**
+	 * The RegExp for URLs
+	 *
+	 * @type {RegExp}
+	 */
+	urlReg = RegExp(/https?:\/\/\w+/);
 
-	async execute(client) {
+	constructor () {
+		super(
+			'Moderation',
+			'The Git Shit Din:tm:',
+			['messageCreate']
+		);
+	}
+
+	/** @param {import('discord.js').Client} client */
+	init(client) {
 		/* ============================
 
 				Moderation Commands
 
 		=============================*/
-		client.on(Events.InteractionCreate, async interaction => {
+		client.on(Events.InteractionCreate, async (interaction) => {
 			if (!interaction.isChatInputCommand()) return;
 
 			// REPORT COMMAND
@@ -25,30 +48,37 @@ module.exports = {
 				const reportMessage = interaction.options.getString('message');
 				const reportDetails = interaction.options.getString('details');
 
-				if (!urlReg.test(reportMessage)) {
+				if (!reportMessage) {
 					const embed = new EmbedBuilder()
-						.setColor(red)
+						.setColor(this.colors.RED)
+						.setDescription('Message must not be empty.');
+					return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				}
+
+				if (!this.urlReg.test(reportMessage)) {
+					const embed = new EmbedBuilder()
+						.setColor(this.colors.RED)
 						.setDescription('Message option must be a link to message.');
-					return await interaction.reply({ embeds: [embed], ephemeral: true });
+					return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 
 				const modEmbed = new EmbedBuilder()
-					.setAuthor('Report Received', interaction.guild.iconURL({ size: 64, dynamic: true }))
-					.setColor(yellow)
+					.setAuthor({ name: 'Report Received', iconURL: interaction.guild.iconURL({ size: 64 }) ?? '' })
+					.setColor(this.colors.YELLOW)
 					.setDescription(`**Reported User:** ${reportUser.tag} ${reportUser}
 													**Reported Message:** [Context](${reportMessage})
 													**Report Details:**
 													${blockQuote(reportDetails)}`);
 
-				const modRole = await interaction.guild.roles.cache.find(role => role.name === 'Moderator');
+				const modRole = interaction.guild.roles.cache.find(role => role.name === 'Moderator');
 				await interaction.guild.channels.cache.find(channel => channel.name === 'mod')
 					.send({ content: `${modRole}, a report has been received from ${interaction.member} (${interaction.user.tag}).`, embeds: [modEmbed] });
 
 				const embed = new EmbedBuilder()
-					.setColor(green)
+					.setColor(this.colors.GREEN)
 					.setDescription('Report successfully sent to moderation.');
 
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 		});
 		/* ============================
@@ -81,12 +111,12 @@ module.exports = {
 						}
 						// build evidence log embed
 						const embed = new EmbedBuilder()
-							.setColor(gray)
+							.setColor(this.colors.GRAY)
 							.setTimestamp()
 							.setFooter({ text: `Member: ${message.author.id}` })
 							.setAuthor({
 								name: `Message Logged (#${message.channel.name})`,
-								iconURL: message.guild.iconURL({ size: 64, dynamic: true }),
+								iconURL: message.guild.iconURL({ size: 64 }) ?? '',
 							})
 							.setDescription(`**Offender:** ${message.author.tag} ${message.author}
 															**Staff:** ${executor.tag} ${executor}
@@ -114,11 +144,11 @@ module.exports = {
 			if (kickLog.createdAt > member.joinedAt) {
 				if (target.id === member.id) {
 					const embed = new EmbedBuilder()
-						.setColor(orange)
+						.setColor(this.colors.ORANGE)
 						.setTimestamp()
 						.setAuthor({
 							name: 'Member Kicked',
-							iconURL: member.guild.iconURL({ size: 64, dynamic: true }),
+							iconURL: member.guild.iconURL({ size: 64 }) ?? '',
 						})
 						.setFooter({ text: `Member: ${member.user.id}` })
 						.setDescription(`**Offender:** ${member.user.tag} ${member.user}
@@ -143,20 +173,21 @@ module.exports = {
 			const { executor, target, reason } = banLog;
 			if (target.id === ban.user.id) {
 				const embed = new EmbedBuilder()
-					.setColor(red)
+					.setColor(this.colors.RED)
 					.setTimestamp()
 					.setAuthor({
 						name: 'Member Banned',
-						iconURL: ban.guild.iconURL({ size: 64, dynamic: true }),
+						iconURL: ban.guild.iconURL({ size: 64 }) ?? '',
 					})
 					.setFooter({ text: `Member: ${ban.user.id}` })
 					.setDescription(`**Offender:** ${ban.user.tag} ${ban.user}
 														**Staff:** ${executor.tag} ${executor}
 														**Reason:** ${reason}`);
 
-				await ban.guild.channels.cache.find(channel => channel.name === 'evidence')
+				await ban.guild.channels.cache
+					.find(channel => channel.name === 'evidence')
 					.send({ embeds: [embed] });
 			}
 		});
-	},
-};
+	}
+}

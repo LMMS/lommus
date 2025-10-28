@@ -1,126 +1,213 @@
-require('dotenv').config();
-const fs = require('fs');
-// const db = require('quick.db');
-const { Client, Events, Collection, GatewayIntentBits, EmbedBuilder, Partials, ActivityType } = require('discord.js');
-const { guildId, green, red } = require('./config.json');
-// const delay = ms => new Promise(res => setTimeout(res, ms));
-const client = new Client({
-	intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMembers,
-		GatewayIntentBits.GuildBans,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.GuildModeration,
-		GatewayIntentBits.GuildMessageReactions,
-		GatewayIntentBits.MessageContent,
-		GatewayIntentBits.DirectMessages,
-	],
-	partials: [
-		Partials.Message,
-		Partials.Channel,
-		Partials.Reaction,
-	],
-});
+import { createRequire } from 'module';
+import fs from 'node:fs';
+import { spawn } from 'node:child_process';
+import config from './config.json' with { type: 'json' };
 
-// Fires when bot successfully authenticates via token
-client.once(Events.ClientReady, async () => {
-	console.log(`Ready! Logged in as ${client.user.tag}`);
-	// Get guild from client in order to set initial activity status. Use cache, if not in cache fetch from API
-	const guild = client.guilds.cache.get(guildId) ?? await client.guilds.fetch(guildId);
+import * as dotenv from 'dotenv';
+dotenv.config({ quiet: true });
+import { ActivityType, Client, EmbedBuilder, Events, GatewayIntentBits, MessageFlags, Partials } from 'discord.js';
 
-    client.user.setActivity(`${guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
+import RoleSelectionModule from './modules/roleSelection.mjs';
 
-	// Collect module files from directory
-	client.addons = new Collection();
-	const addonFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.js'));
-	// Loop Collection of module files
-	for (const file of addonFiles) {
-		// Map
-		const addon = require(`./modules/${file}`);
-		client.addons.set(addon.name, addon);
+console.log("LoMMuS is initializing...");
 
-		// Execute module.export code from module files
-		try {
-			client.addons.get(addon.name).execute(client);
-			console.log(addon.name + ' module loaded.');
-		}
-		catch (error) {
-			console.error(error);
-		}
+class LoMMuS {
+	/**
+	 * The client class instantiated and cached
+	 * @type {Client}
+	 */
+	client = new Client({
+		intents: [
+			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildMembers,
+			GatewayIntentBits.GuildMessages,
+			GatewayIntentBits.GuildModeration,
+			GatewayIntentBits.GuildMessageReactions,
+			GatewayIntentBits.MessageContent,
+			GatewayIntentBits.DirectMessages,
+		],
+		partials: [
+			Partials.Message,
+			Partials.Channel,
+			Partials.Reaction,
+		],
+	});
+
+	/**
+	 * Has the client finished doing module loading?
+	 *
+	 * @type {boolean}
+	 */
+	_isModuleLoadingDone = false;
+
+	/**
+	 * Array of module names that have been loaded and registered
+	 *
+	 * @type {string[]}
+	 */
+	registeredModules = [];
+
+	/**
+	 * Cache color configuration here + TS assertions
+	 * @constant
+	 */
+	colors = {
+		RED: /** @type {`#${string}`} */ (config.red),
+		GREEN: /** @type {`#${string}`} */ (config.green)
+	};
+
+	/**
+	 * Initializes LoMMuS and logs in
+	 * @param {string} token
+	 */
+	constructor (token) {
+		console.log("Instantiating LoMMuS...");
+		this.setupBot();
+		this.setupSlashCommands();
+		this.client.login(token);
 	}
-});
 
-// Fires once for each slash command sent by users
-client.on(Events.InteractionCreate, async interaction => {
-	// Screen bad command interactions
-	if (!interaction.isChatInputCommand()) return;
+	/** Restarts the bot */
+	restart() {
+		spawn(process.argv0, process.argv.slice(1), {
+			detached: true,   // don’t detach from the parent
+			stdio: ['ignore', process.stdout, process.stderr],  // keep terminal connection
+		}).unref();
 
-	// Restart bot
-	if (interaction.commandName === 'restart') {
-		const embed = new EmbedBuilder()
-			.setAuthor({ name: 'Restarting', inconURL: interaction.guild.iconURL({ size: 64, dynamic: true }) })
-			.setColor(red)
-			.setDescription('Was I a Good Bot?');
+		process.exit(0);
+	}
 
-		await interaction.reply({ embeds: [embed], ephemeral: true })
-			// Exit process, loop.sh container will restart bot automatically
-			.then(async () => {
-				await process.exit();
-			})
-			.catch(error => {
-				console.error('Unable to restart!', error);
+	/**
+	 * Loads ES-style modules from the `./modules` directory
+	 */
+	loadESModules() {
+		console.log("Initializing ES module loading...");
+
+		const moduleFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
+
+		for (const file of moduleFiles) {
+			const module = import(`./modules/${file}`);
+
+			module.then((module) => {
+				try {
+					/** @type {InstanceType<typeof import('./modules/util/module.mjs').BotModule>} */
+					const instantiatedModule = new module.default();
+
+					instantiatedModule.init(this.client);
+					this.#checkLoadedModules(instantiatedModule.name);
+					console.log(`'${instantiatedModule.name}' module loaded`);
+				} catch (error) {
+					if (error instanceof Error && error.message.includes("is not a constructor")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
+				}
 			});
-	}
-
-	// Chat as bot
-	if (interaction.commandName === 'say') {
-		const msg = interaction.options.getString('message');
-
-		await interaction.reply({ content: 'Done. Dismiss this message.', ephemeral: true });
-		interaction.channel.send({ content: msg });
-	}
-
-	// Toggle various global booleans
-	if (interaction.commandName === 'toggle') {
-		const toggleType = interaction.options.getString('function');
-		// Color randomization toggle
-		if (toggleType === 'toggle_color') {
-			// flip
-			global.colorRandom = !global.colorRandom;
-
-			const embed = new EmbedBuilder()
-				.setColor(red)
-				.setDescription('Color randomization disabled.');
-			if (global.colorRandom) {
-				embed.setColor(green);
-				embed.setDescription('Color randomization enabled.');
-			}
-			await interaction.reply({ embeds: [embed], ephemeral: true });
 		}
 	}
-});
 
-// Defunct Command handler (works the same as the module loader above)
-/* const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-for (const file of eventFiles) {
-	const event = require(`./events/${file}`);
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
+	/**
+	 * Checks all of the modules that have been loaded
+	 *
+	 * @param {string} moduleName The name of the module
+	 */
+	#checkLoadedModules(moduleName) {
+		if (!this.registeredModules.includes(moduleName)) this.registeredModules.push((moduleName));
 	}
-	else {
-		client.on(event.name, (...args) => event.execute(...args));
+
+	/**
+	 * Sets up initial authentication and bot
+	 * logic, including CJS module loading
+	 */
+	setupBot() {
+		// Fires when bot successfully authenticates via token
+		this.client.once(Events.ClientReady, async () => {
+			// Get guild from client in order to set initial activity status
+			const guild = this.client.guilds.cache.get(config.guildId);
+
+			if (!this.client.user) {
+				console.error("client.user not defined! Did the authentication fail?");
+				return;
+			}
+			if (!guild) {
+				console.error("guild is not defined! Is the bot joined to any server?");
+				return;
+			}
+
+			console.log(`Ready! Logged in as ${this.client.user.tag}`);
+
+			this.client.user.setActivity(`${guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
+
+			// This needs to be called here so that the guild data cache isn't stale
+			this.loadESModules();
+		});
+		console.log("Initial bot setup done!");
+	}
+
+	/**
+	 * Sets up slash command logic
+	 */
+	setupSlashCommands() {
+		// Fires once for each slash command sent by users
+		this.client.on(Events.InteractionCreate, async (interaction) => {
+			if (!interaction || !interaction.channel || !interaction.guild) {
+				console.error("Interaction is not configured correctly! Has slash commands been registered yet?");
+				return;
+			}
+
+			// Screen bad command interactions
+			if (!interaction.isChatInputCommand()) return;
+
+			// Restart bot
+			if (interaction.commandName === 'restart') {
+				console.log("Restarting...");
+				const embed = new EmbedBuilder()
+					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+					.setColor(this.colors.RED)
+					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
+
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+					.then(async () => {
+						this.restart();
+					})
+					.catch(error => {
+						throw new Error(`Unable to restart properly! ${error}`);
+					});
+			}
+
+			// Chat as bot
+			if (interaction.commandName === 'say') {
+				const msg = interaction.options.getString('message') ?? "";
+
+				interaction.reply({ content: 'Message said', flags: MessageFlags.Ephemeral });
+				// @ts-ignore
+				await interaction.channel.send({ content: msg });
+			}
+
+			// Toggle various global booleans
+			if (interaction.commandName === 'toggle') {
+				const toggleType = interaction.options.getString('function');
+				// Color randomization toggle
+				if (toggleType === 'toggle_color') {
+					// flip
+					// TODO: ESM-ize these global vars
+					RoleSelectionModule.colorRandom = !RoleSelectionModule.colorRandom;
+
+					const embed = new EmbedBuilder()
+						.setColor(this.colors.RED)
+						.setDescription('Color randomization disabled.');
+					// TODO: ESM-ize this global var
+					if (RoleSelectionModule.colorRandom) {
+						embed.setColor(this.colors.GREEN);
+						embed.setDescription('Color randomization enabled.');
+					}
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				}
+			}
+		});
+		console.log("Slash command setup done!");
 	}
 }
-
-client.commands = new Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-	client.commands.set(command.data.name, command);
-}
-*/
 
 // generic error handling
-process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection\n', error));
+process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error));
 
-client.login(process.env.TOKEN);
+// final token check
+export const LOMMUS = (process.env.TOKEN) ? new LoMMuS(process.env.TOKEN) : console.error("Token not found in env!");

@@ -1,16 +1,23 @@
-const { time, hideLinkEmbed } = require('@discordjs/builders');
-const { EmbedBuilder, Events } = require('discord.js');
-const { red, green } = require('../config.json');
-// const wait = require('node:timers/promises').setTimeout;
-const fs = require('fs');
+import { time, hideLinkEmbed, EmbedBuilder, Events, MessageFlags } from 'discord.js';
+import config from '../config.json' with { type: 'json' };
+import fs from 'node:fs';
+import { BotModule } from './util/module.mjs';
 
-module.exports = {
+export default class UserCommandsModule extends BotModule {
+	/**
+	 * Cache color configuration here + TS assertions
+	 * @constant
+	 */
+	colors = {
+		RED: /** @type {`#${string}`} */ (config.red),
+		GREEN: /** @type {`#${string}`} */ (config.green)
+	};
+	constructor () {
+		super('User Commands', 'permissionless commands for users', ['interactionCreate']);
 
-	name: 'User Commands',
-	description: 'permissionless commands for users',
-	listeners: ['interactionCreate'],
-
-	async execute(client) {
+	}
+	/** @param {import('discord.js').Client} client */
+	init(client) {
 		client.on(Events.InteractionCreate, async interaction => {
 			if (!interaction.isChatInputCommand()) return;
 
@@ -22,9 +29,9 @@ module.exports = {
 				// Make sure target is from server
 				if (!targetUser) {
 					const embed = new EmbedBuilder()
-						.setColor(red)
+						.setColor(this.colors.RED)
 						.setDescription('Specified user was not found on this server.');
-					return await interaction.reply({ embeds: [embed], ephemeral: true });
+					return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 				}
 
 				// Build embed
@@ -33,7 +40,7 @@ module.exports = {
 						name: targetUser.user.tag,
 						iconURL: targetUser.user.displayAvatarURL(),
 					})
-					.setImage(targetUser.displayAvatarURL({ size: 2048, dynamic: true }))
+					.setImage(targetUser.displayAvatarURL({ size: 2048 }))
 					.setColor(targetUser.displayHexColor)
 					.addFields(
 						{ name: 'Most Recent Join', value: time(targetUser.joinedAt), inline: true },
@@ -46,7 +53,7 @@ module.exports = {
 						{ name: 'Server Roles', value: targetUser.roles.cache.sort((a, b) => parseFloat(b.position) - parseFloat(a.position)).map(r => `${r}`).filter(f => f != '@everyone').join(', ') },
 					);
 				}
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Server info
@@ -57,45 +64,45 @@ module.exports = {
 						name: interaction.guild.name,
 						iconURL: interaction.guild.iconURL(),
 					})
-					.setColor(interaction.guild.me.displayHexColor)
-					.setThumbnail(interaction.guild.iconURL({ size: 128, dynamic: true }))
+					// .setColor(interaction.guild.me.displayHexColor)
+					.setThumbnail(interaction.guild.iconURL({ size: 128 }))
 					.setDescription(`${interaction.guild.description}\n${hideLinkEmbed('https://discord.gg/LMMS')}`)
 					.addFields(
 						{ name: 'Date Created', value: time(interaction.guild.createdAt), inline: false },
 						{ name: 'Total Members', value: `${interaction.guild.memberCount}`, inline: true },
-						{ name: 'Online Members', value: `${interaction.guild.members.cache.filter(member =>
-							member.presence?.status !== 'offline').size}`, inline: true },
+						{
+							name: 'Online Members', value: `${interaction.guild.members.cache.filter(member =>
+								member.presence?.status !== 'offline').size}`, inline: true
+						},
 						{ name: 'Maximum Members', value: `${interaction.guild.maximumMembers}`, inline: true },
 						{ name: 'Boost Count', value: `${interaction.guild.premiumSubscriptionCount}`, inline: true },
 						{ name: 'Boost Tier', value: `${interaction.guild.premiumTier}`, inline: true },
 						{ name: 'Bans', value: `${bans.size}`, inline: true },
 					);
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// Bot info
 			if (interaction.commandName === 'bot') {
-				const changelog = await fs.readFileSync('./changelog.txt', { 'encoding': 'utf-8' });
-				const readme = await fs.readFileSync('./README.md', { 'encoding': 'utf-8' });
+				const changelog = fs.readFileSync('./changelog.txt', { 'encoding': 'utf-8' });
+				const readme = fs.readFileSync('./README.md', { 'encoding': 'utf-8' });
 
 				const embed = new EmbedBuilder()
-					.setColor(interaction.guild.me.displayHexColor)
-					.setDescription(`**README.md:**\n\`\`\`md\n${readme}\n\`\`\`\n`
-												+ changelog);
+					// .setColor(interaction.guild.me.displayHexColor)
+					.setDescription(`**README.md:**\n\`\`\`md\n${readme.substring(0, 1000)}\n\`\`\`\n`
+						+ changelog.substring(0, 1000));
 
-				await interaction.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 
 			// topic
 			if (interaction.commandName === 'topic') {
 				const embed = new EmbedBuilder()
-					.setColor(green)
+					.setColor(this.colors.GREEN)
 					.setDescription('No topic set for this channel.');
 				if (interaction.channel.topic) embed.setDescription(interaction.channel.topic);
-				await interaction.reply({ embeds: [embed], ephemeral: false });
+				await interaction.reply({ embeds: [embed] });
 			}
-
-
 		});
-	},
-};
+	}
+}

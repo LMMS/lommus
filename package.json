@@ -1,25 +1,36 @@
 {
   "name": "lommus",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "author": "slapkev",
   "main": "lommus.js",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "14.23.2",
+    "dotenv": "17.2.3",
+    "humanize-duration": "^3.33.1",
+    "lzma": "^2.3.2"
+  },
+  "bugs": {
+    "url": "https://github.com/lmms/lommus/issues"
+  },
+  "contributors": [
+    {
+      "name": "Markus Mafz",
+      "url": "https://github.com/headquarter8302"
+    }
+  ],
+  "description": "LoMMuS, the LMMS Discord server's resident bot",
+  "homepage": "https://github.com/lmms/lommus",
+  "license": "ISC",
+  "private": "true",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node lommus.js",
     "daemon-win": "powershell -File ./scripts/run.ps1",
     "daemon-linux": "bash ./scripts./run.sh"
   },
-  "author": "slapkev",
-  "license": "ISC",
-  "dependencies": {
-    "discord.js": "^14.11.0",
-    "dotenv": "^16.4.7",
-    "humanize-duration": "^3.33.1",
-    "lzma": "^2.3.2",
-    "node-fetch": "^2.6.11",
-    "pm2": "^6.0.13"
-  },
   "devDependencies": {
-    "eslint": "^9.37.0"
+    "@types/lzma": "^2.3.0",
+    "@types/node": "^24.8.1"
   }
 }
