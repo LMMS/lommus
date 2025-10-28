@@ -41,7 +41,6 @@ export default class GitHubIssueParserModule extends BotModule {
             const seen = new Set();
 
             for (const m of matches) {
-                console.log("match")
                 const org = m.groups.org || config.github.allowedOrgs[0];
                 const repo = m.groups.repo || m.groups.repoOnly || config.github.defaultRepo;
                 const issue = parseInt(m.groups.issue);
