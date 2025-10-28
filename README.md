@@ -85,7 +85,10 @@ While it is possible to just run `lommus.js` directly using your favourite runne
 
 | Windows | Linux |
 | - | - |
+| Run `npm run daemon-win`. This will run `run.ps1` which will initiate LoMMuS as a `pm2` process. Or... | Run `npm run daemon-linux`. This will initiate LoMMuS as a batch child process. Or... |
 | Run [`_win_run.bat`](scripts/_win_run.bat)<br><details><summary>**Note**</summary> This batch script is very rudimentary, and may not work as you expect it to</details> | Run [`run.sh`](scripts/run.sh) |
+
+Tested compatible are NodeJS and Bun. Any Node-compatible and NPM-aware JS runtimes should be able to run LoMMuS.
 
 ## Developing
 
