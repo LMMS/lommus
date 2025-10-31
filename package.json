@@ -5,7 +5,7 @@
   "main": "lommus.js",
   "type": "module",
   "dependencies": {
-    "discord.js": "14.23.2",
+    "discord.js": "14.24.0",
     "dotenv": "17.2.3",
     "humanize-duration": "^3.33.1",
     "lzma": "^2.3.2"
