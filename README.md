@@ -63,7 +63,7 @@ See the given [`.env.example`](.env.example) file for an example.
 
 ### Setting up bot configuration
 
-LoMMuS requires a `config.json` file at the root of the repository that contains some values. See [`config.json.example`](config.json) for an example.
+LoMMuS requires a `config.json` file at the root of the repository that contains some values. See [`config.json.example`](config.json.example) for an example.
 
 Note that the only real values needing changes are:
 
