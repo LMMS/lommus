@@ -24,6 +24,6 @@ export class BotModule {
 	 * @param {import('discord.js').Client} client
 	 */
 	init(client) {
-		throw new Error("Method `init()` must be implemented by sublassess");
+		throw new Error("Method `init()` must be implemented by subclasses");
 	}
 }
