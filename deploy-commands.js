@@ -71,11 +71,6 @@ const commands = [
 		.setName('channels')
 		.setDescription('get a list of server channels'),
 
-	// color
-	new SlashCommandBuilder()
-		.setName('color')
-		.setDescription('gently apply color to self'),
-
 	// toggle
 	new SlashCommandBuilder()
 		.setName('toggle')
@@ -85,23 +80,9 @@ const commands = [
 				.setDescription('functionality to toggle')
 				.setRequired(true)
 				.addChoices(
-					{ name: 'color', value: 'toggle_color' },
-				))
+				// { name: 'color', value: 'toggle_color' },
+			))
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-
-	// report
-	new SlashCommandBuilder()
-		.setName('report')
-		.setDescription('report sus behavior')
-		.addUserOption(option => option.setName('user')
-			.setDescription('user being reported (mention or ID)')
-			.setRequired(true))
-		.addStringOption(option => option.setName('message')
-			.setDescription('message link (must be URL!)')
-			.setRequired(true))
-		.addStringOption(option => option.setName('details')
-			.setDescription('explain problem (briefly)')
-			.setRequired(true)),
 
 	// whois
 	new SlashCommandBuilder()
@@ -155,8 +136,13 @@ commands.push(
 
 if (process.env.TOKEN) {
 	const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
+
+	rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), { body: [] })
+		.then(() => console.log('Deleted registered application commands, registering again...'))
+		.catch(console.error);
+
 	rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), { body: commands })
-		.then(() => console.log('Successfully registered application commands.'))
+		.then(() => console.log('Successfully registered application commands'))
 		.catch(console.error);
 } else {
 	console.error("Token is missing!");

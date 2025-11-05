@@ -7,8 +7,6 @@ import * as dotenv from 'dotenv';
 dotenv.config({ quiet: true });
 import { ActivityType, Client, EmbedBuilder, Events, GatewayIntentBits, MessageFlags, Partials } from 'discord.js';
 
-import RoleSelectionModule from './modules/roleSelection.mjs';
-
 console.log("LoMMuS is initializing...");
 
 class LoMMuS {
@@ -184,22 +182,7 @@ class LoMMuS {
 			// Toggle various global booleans
 			if (interaction.commandName === 'toggle') {
 				const toggleType = interaction.options.getString('function');
-				// Color randomization toggle
-				if (toggleType === 'toggle_color') {
-					// flip
-					// TODO: ESM-ize these global vars
-					RoleSelectionModule.colorRandom = !RoleSelectionModule.colorRandom;
-
-					const embed = new EmbedBuilder()
-						.setColor(this.colors.RED)
-						.setDescription('Color randomization disabled.');
-					// TODO: ESM-ize this global var
-					if (RoleSelectionModule.colorRandom) {
-						embed.setColor(this.colors.GREEN);
-						embed.setDescription('Color randomization enabled.');
-					}
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-				}
+				// noop for now
 			}
 		});
 		console.log("Slash command setup done!");
