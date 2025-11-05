@@ -65,16 +65,6 @@ class LoMMuS {
 		this.client.login(token);
 	}
 
-	/** Restarts the bot */
-	restart() {
-		spawn(process.argv0, process.argv.slice(1), {
-			detached: true,   // don’t detach from the parent
-			stdio: ['ignore', process.stdout, process.stderr],  // keep terminal connection
-		}).unref();
-
-		process.exit(0);
-	}
-
 	/**
 	 * Loads ES-style modules from the `./modules` directory
 	 */
@@ -163,7 +153,7 @@ class LoMMuS {
 
 				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
 					.then(async () => {
-						this.restart();
+						setTimeout(() => process.exit(1), 1000);
 					})
 					.catch(error => {
 						throw new Error(`Unable to restart properly! ${error}`);
