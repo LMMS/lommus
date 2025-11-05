@@ -89,20 +89,6 @@ const commands = [
 				))
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
-	// report
-	new SlashCommandBuilder()
-		.setName('report')
-		.setDescription('report sus behavior')
-		.addUserOption(option => option.setName('user')
-			.setDescription('user being reported (mention or ID)')
-			.setRequired(true))
-		.addStringOption(option => option.setName('message')
-			.setDescription('message link (must be URL!)')
-			.setRequired(true))
-		.addStringOption(option => option.setName('details')
-			.setDescription('explain problem (briefly)')
-			.setRequired(true)),
-
 	// whois
 	new SlashCommandBuilder()
 		.setName('whois')
