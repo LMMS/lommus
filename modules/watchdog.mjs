@@ -1,6 +1,6 @@
 import { EmbedBuilder, Events, PermissionFlagsBits } from 'discord.js';
 import config from '../config.json' with { type: 'json' };
-// const badURLs = require('../spam.json');
+// const badURLs = require('../data/spam.json');
 import { setTimeout as wait } from 'node:timers/promises';
 import { BotModule } from './util/module.mjs';
 
