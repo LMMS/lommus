@@ -1,16 +1,8 @@
 import { EmbedBuilder, Events } from 'discord.js';
-import config from '../config.json' with { type: 'json' };
 import { BotModule } from './util/module.mjs';
+import { config } from './util/config.mjs';
 
 export default class GitHubIssueParserModule extends BotModule {
-    /**
-     * Cache color configuration here + TS assertions
-     * @constant
-     */
-    colors = {
-        RED: /** @type {`#${string}`} */ (config.red),
-        GREEN: /** @type {`#${string}`} */ (config.green)
-    };
     constructor () {
         super('Github Issue Parser', 'Parses #discriminators and links respective issue/pull requests', ['messageCreate']);
     }
@@ -114,7 +106,7 @@ export default class GitHubIssueParserModule extends BotModule {
                     });
 
                 if (output.length > 9) {
-                    console.log("break")
+                    console.log("break");
                     break;
                 }
             }

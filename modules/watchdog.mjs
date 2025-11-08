@@ -1,18 +1,9 @@
 import { EmbedBuilder, Events, PermissionFlagsBits } from 'discord.js';
-import config from '../config.json' with { type: 'json' };
 // const badURLs = require('../data/spam.json');
 import { setTimeout as wait } from 'node:timers/promises';
 import { BotModule } from './util/module.mjs';
 
 export default class WatchdogModule extends BotModule {
-	/**
-	 * Cache color configuration here + TS assertions
-	 * @constant
-	 */
-	colors = {
-		RED: /** @type {`#${string}`} */ (config.red)
-	};
-
 	/**
 	 * The RegExp for URLs
 	 */

@@ -1,17 +1,8 @@
 import { time, hideLinkEmbed, EmbedBuilder, Events, MessageFlags } from 'discord.js';
-import config from '../config.json' with { type: 'json' };
 import fs from 'node:fs';
 import { BotModule } from './util/module.mjs';
 
 export default class UserCommandsModule extends BotModule {
-	/**
-	 * Cache color configuration here + TS assertions
-	 * @constant
-	 */
-	colors = {
-		RED: /** @type {`#${string}`} */ (config.red),
-		GREEN: /** @type {`#${string}`} */ (config.green)
-	};
 	constructor () {
 		super('User Commands', 'permissionless commands for users', ['interactionCreate']);
 

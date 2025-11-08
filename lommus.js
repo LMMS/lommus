@@ -1,11 +1,12 @@
 import { createRequire } from 'module';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
-import config from './config.json' with { type: 'json' };
 
 import * as dotenv from 'dotenv';
 dotenv.config({ quiet: true });
 import { ActivityType, Client, EmbedBuilder, Events, GatewayIntentBits, MessageFlags, Partials } from 'discord.js';
+import { colors } from './modules/util/colors.mjs';
+import { config } from './modules/util/config.mjs';
 
 console.log("LoMMuS is initializing...");
 
@@ -44,15 +45,6 @@ class LoMMuS {
 	 * @type {string[]}
 	 */
 	registeredModules = [];
-
-	/**
-	 * Cache color configuration here + TS assertions
-	 * @constant
-	 */
-	colors = {
-		RED: /** @type {`#${string}`} */ (config.red),
-		GREEN: /** @type {`#${string}`} */ (config.green)
-	};
 
 	/**
 	 * Initializes LoMMuS and logs in
@@ -148,7 +140,7 @@ class LoMMuS {
 				console.log("Restarting...");
 				const embed = new EmbedBuilder()
 					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-					.setColor(this.colors.RED)
+					.setColor(colors.RED)
 					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
 
 				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })

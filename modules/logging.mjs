@@ -1,18 +1,8 @@
 import { blockQuote, time, EmbedBuilder, Events, ActivityType, AuditLogEvent } from 'discord.js';
-import config from '../config.json' with { type: 'json' };
 import * as my_lzma from 'lzma';
 import { BotModule } from './util/module.mjs';
 
 export default class LoggingModule extends BotModule {
-	/**
-	 * Cache color configuration here + TS assertions
-	 * @constant
-	 */
-	colors = {
-		RED: /** @type {`#${string}`} */ (config.red),
-		GREEN: /** @type {`#${string}`} */ (config.green),
-		GRAY: /** @type {`#${string}`} */ (config.gray)
-	};
 	constructor () {
 		super(
 			'Logging',

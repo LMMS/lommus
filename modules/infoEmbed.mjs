@@ -1,18 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import fs from 'node:fs';
-import config from '../config.json' with { type: 'json' };
 import { BotModule } from './util/module.mjs';
 
 export default class InfoEmbedModule extends BotModule {
-	/**
-	 * Cache color configuration here + TS assertions
-	 * @constant
-	 */
-	colors = {
-		RED: /** @type {`#${string}`} */ (config.red),
-		GREEN: /** @type {`#${string}`} */ (config.green)
-	};
-
 	/**
 	 * List of rules from the JSON file
 	 *
