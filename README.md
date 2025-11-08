@@ -18,12 +18,12 @@ The old README is located in [README.old.md](README.old.md), which displays note
 
 - [Features](#features)
 - [Deployment](#deployment)
-	- [Setting up auth](#setting-up-auth)
-	- [Setting up bot configuration](#setting-up-bot-configuration)
-	- [Registering slash commands](#registering-slash-commands)
-	- [Running the bot](#running-the-bot)
+  - [Setting up auth](#setting-up-auth)
+  - [Setting up bot configuration](#setting-up-bot-configuration)
+  - [Registering slash commands](#registering-slash-commands)
+  - [Running the bot](#running-the-bot)
 - [Developing](#developing)
-	- [TypeScript](#typescript)
+  - [TypeScript](#typescript)
 
 ## Features
 
@@ -83,12 +83,14 @@ The script is independent of the other modules and handles authentication by its
 
 While it is possible to just run `lommus.js` directly using your favourite runner, we've provided some scripts that should help you run the bot.
 
+LoMMuS is designed to be ran from PM2. The `run daemon-*` scripts do exactly that.
+
 | Windows | Linux |
 | - | - |
-| Run `npm run daemon-win`. This will run `run.ps1` which will initiate LoMMuS as a `pm2` process. Or... | Run `npm run daemon-linux`. This will initiate LoMMuS as a batch child process. Or... |
-| Run [`_win_run.bat`](scripts/_win_run.bat)<br><details><summary>**Note**</summary> This batch script is very rudimentary, and may not work as you expect it to</details> | Run [`run.sh`](scripts/run.sh) |
+| Run `npm run daemon-win`. This will run `run.ps1` which will initiate LoMMuS as a `pm2` process. Or... | Run `npm run daemon-linux`. This will initiate LoMMuS as a `pm2` process. Or... |
+| Run [`_win_run.bat`](scripts/_win_run.bat)<br><details><summary>**Note**</summary> This batch script is very rudimentary, and may not work as you expect it to</details> | Run [`run.old.sh`](scripts/run.old.sh)<br><details><summary>**Note**</summary> This Bash script is very rudimentary, and may not work as you expect it to</details> |
 
-Tested compatible are NodeJS and Bun. Any Node-compatible and NPM-aware JS runtimes should be able to run LoMMuS.
+Tested runtimes are NodeJS and Bun. Any Node-compatible and NPM-aware JS runtimes should be able to run LoMMuS.
 
 ## Developing
 
