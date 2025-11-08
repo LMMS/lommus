@@ -106,6 +106,7 @@ class LoMMuS {
 				console.error("client.user not defined! Did the authentication fail?");
 				return;
 			}
+
 			if (!guild) {
 				console.error("guild is not defined! Is the bot joined to any server?");
 				return;
@@ -118,6 +119,7 @@ class LoMMuS {
 			// This needs to be called here so that the guild data cache isn't stale
 			this.loadESModules();
 		});
+
 		console.log("Initial bot setup done!");
 	}
 
@@ -135,36 +137,51 @@ class LoMMuS {
 			// Screen bad command interactions
 			if (!interaction.isChatInputCommand()) return;
 
-			// Restart bot
-			if (interaction.commandName === 'restart') {
-				console.log("Restarting...");
-				const embed = new EmbedBuilder()
-					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-					.setColor(colors.RED)
-					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
+			switch (interaction.commandName) {
+				case 'restart': {
+					console.log("Restarting...");
+					const embed = new EmbedBuilder()
+						.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+						.setColor(colors.RED)
+						.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
 
-				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-					.then(async () => {
-						setTimeout(() => process.exit(1), 1000);
-					})
-					.catch(error => {
-						throw new Error(`Unable to restart properly! ${error}`);
-					});
-			}
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+						.then(async () => {
+							setTimeout(() => process.exit(1), 1000);
+						})
+						.catch(error => {
+							throw new Error(`Unable to restart properly! ${error}`);
+						});
+					break;
+				}
+				case 'say': {
+					const msg = interaction.options.getString('message') ?? "";
 
-			// Chat as bot
-			if (interaction.commandName === 'say') {
-				const msg = interaction.options.getString('message') ?? "";
+					interaction.reply({ content: 'Message said', flags: MessageFlags.Ephemeral });
+					// @ts-ignore
+					await interaction.channel.send({ content: msg });
+					break;
+				}
+				case 'toggle': {
+					const toggleType = interaction.options.getString('function');
 
-				interaction.reply({ content: 'Message said', flags: MessageFlags.Ephemeral });
-				// @ts-ignore
-				await interaction.channel.send({ content: msg });
-			}
+					// noop for now
+					break;
+				}
+				case 'kill': {
+					console.log("Killing bot...");
 
-			// Toggle various global booleans
-			if (interaction.commandName === 'toggle') {
-				const toggleType = interaction.options.getString('function');
-				// noop for now
+					const embed = new EmbedBuilder()
+						.setAuthor({ name: 'Exiting bot', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+						.setColor(colors.RED)
+						.setDescription('Goodbye world.');
+
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+						.then(async () => {
+							setTimeout(() => process.exit(0), 10);
+						})
+					break;
+				}
 			}
 		});
 		console.log("Slash command setup done!");

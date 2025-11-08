@@ -11,6 +11,12 @@ const commands = [
 		.setDescription('Bippidy Boppidy Ska')
 		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
 
+	// restart
+	new SlashCommandBuilder()
+		.setName('kill')
+		.setDescription('Was I not good enough?')
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+
 	// say
 	new SlashCommandBuilder()
 		.setName('say')
