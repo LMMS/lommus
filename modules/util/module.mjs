@@ -1,7 +1,11 @@
+
+import { colors } from './colors.mjs';
+
 export class BotModule {
 	name = "";
 	description = "";
 	listeners = [""];
+	colors = colors;
 
 	/**
 	 * Constructs a bot module

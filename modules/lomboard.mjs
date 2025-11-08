@@ -1,19 +1,10 @@
 import { EmbedBuilder, Events } from 'discord.js';
-import config from '../config.json' with { type: 'json' };
 import { BotModule } from './util/module.mjs';
 
 // lmms server: <:bouba:1194451869829967952>
 // dev server: <:bouba:1074102259190866010>
 
 export default class LomboardModule extends BotModule {
-	/**
-	 * Cache color configuration here + TS assertions
-	 * @constant
-	 */
-	colors = {
-		GREEN: /** @type {`#${string}`} */ (config.green)
-	};
-
 	/**
 	 * The emoji ID used for starring messages
 	 *

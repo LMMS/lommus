@@ -1,11 +1,7 @@
-/*
-		script to generate the client side slash commands
-		kev 2021
-*/
 import * as dotenv from 'dotenv';
 dotenv.config({ path: __dirname.concat('/.env'), quiet: true });
 import { SlashCommandBuilder, PermissionFlagsBits, Routes, REST } from 'discord.js';
-import config from "./config.json" with { type: 'json' };
+import { config } from './modules/util/config.mjs';
 
 // Manual command builder for now
 const commands = [
