@@ -11,7 +11,7 @@ const commands = [
 		.setDescription('Bippidy Boppidy Ska')
 		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
 
-	// restart
+	// kill bot
 	new SlashCommandBuilder()
 		.setName('kill')
 		.setDescription('Was I not good enough?')
