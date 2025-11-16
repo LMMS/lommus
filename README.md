@@ -32,13 +32,15 @@ The old README is located in [README.old.md](README.old.md), which displays note
   - Print the server's rules
   - Say something as the bot
   - Get a list of the server's channels
-  - Apply a color to self
   - Get the user info of a given user
   - Get information about the server
-  - Get infomration about the bot
+  - Get information about the bot
   - Display the topic of the channel
-- Starboard feature we call "Lomboard"
+  - Restart the bot
+  - Kill the bot
+- A Starboard we call "Lomboard"
 - Fetch GitHub issue and PR tickets
+  - Type `org-name/repo-name#xxx` or `#xxx` to use it. The specifier must have at least 3 numbers to be detected by the bot. Left pad the ticket number with zeroes if you're referencing an issue/ticket that's less than 100 (e.g. `#090`, `#005`)
 - Basic anti-spam features
 - Server logging functionality
 
