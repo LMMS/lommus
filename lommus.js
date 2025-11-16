@@ -1,6 +1,4 @@
-import { createRequire } from 'module';
 import fs from 'node:fs';
-import { spawn } from 'node:child_process';
 
 import * as dotenv from 'dotenv';
 dotenv.config({ quiet: true });
