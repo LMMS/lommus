@@ -18,6 +18,7 @@ The old README is located in [README.old.md](README.old.md), which displays note
 
 - [Features](#features)
 - [Deployment](#deployment)
+  - [Quick run](#quick-run)
   - [Setting up auth](#setting-up-auth)
   - [Setting up bot configuration](#setting-up-bot-configuration)
   - [Registering slash commands](#registering-slash-commands)
@@ -44,6 +45,15 @@ The old README is located in [README.old.md](README.old.md), which displays note
 ## Deployment
 
 Clone the repository, then install the dependencies.
+
+### Quick run
+
+1. Fill tokens in `.env`
+2. Fill IDs in `config.json`
+3. Run `npm run deploy-commands`
+   1. or `scripts/setup.[ps1/sh]`
+4. Run `npm run start`
+   1. or `scripts/run.[ps1/sh]`
 
 ### Setting up auth
 

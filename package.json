@@ -27,7 +27,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node lommus.js",
     "daemon-win": "powershell -File ./scripts/run.ps1",
-    "daemon-linux": "bash ./scripts/run.sh"
+    "daemon-linux": "bash ./scripts/run.sh",
+    "deploy-commands": "node deploy-commands.js"
   },
   "devDependencies": {
     "@types/lzma": "^2.3.0",
