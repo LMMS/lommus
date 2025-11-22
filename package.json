@@ -8,7 +8,8 @@
     "discord.js": "14.24.2",
     "dotenv": "17.2.3",
     "humanize-duration": "^3.33.1",
-    "lzma": "^2.3.2"
+    "lzma": "^2.3.2",
+    "pm2": "^6.0.13"
   },
   "bugs": {
     "url": "https://github.com/lmms/lommus/issues"
