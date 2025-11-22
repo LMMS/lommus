@@ -58,26 +58,48 @@ class LoMMuS {
 	/**
 	 * Loads ES-style modules from the `./modules` directory
 	 */
-	loadESModules() {
+	async loadESModules() {
 		console.log("Initializing ES module loading...");
 
-		const moduleFiles = fs.readdirSync('./modules').filter(file => file.endsWith('.mjs'));
+		const moduleFiles = fs
+			.readdirSync('./modules')
+			.filter(file => file.endsWith('.mjs'));
 
 		for (const file of moduleFiles) {
-			const module = import(`./modules/${file}`);
+			// cachebust
+			const path = `./modules/${file}?t=${Date.now()}`;
+			let mod;
 
-			module.then((module) => {
-				try {
-					/** @type {InstanceType<typeof import('./modules/util/module.mjs').BotModule>} */
-					const instantiatedModule = new module.default();
+			// try to import this first
+			try {
+				mod = await import(path);
+			} catch (err) {
+				console.error(`Failed to import ${file}:`, err);
+				continue;
+			}
 
-					instantiatedModule.init(this.client);
-					this.#checkLoadedModules(instantiatedModule.name);
-					console.log(`'${instantiatedModule.name}' module loaded`);
-				} catch (error) {
-					if (error instanceof Error && error.message.includes("is not a constructor")) console.warn('Ignoring \'' + file + '\' as it is not an initializable ES module');
-				}
-			});
+			if (typeof mod.default !== 'function') {
+				console.warn(`Ignoring '${file}' as the default export is not a constructor`);
+				continue;
+			}
+
+			/** @type {InstanceType<typeof import('./modules/util/module.mjs').BotModule>} */
+			let instance;
+
+			try {
+				instance = new mod.default();
+			} catch (err) {
+				console.warn(`Ignoring '${file}', could not instantiate default export`);
+				continue;
+			}
+
+			try {
+				instance.init(this.client);
+				this.#checkLoadedModules(instance.name);
+				console.log(`'${instance.name}' module loaded`);
+			} catch (err) {
+				console.error(`Error initializing '${file}':`, err);
+			}
 		}
 	}
 
@@ -91,8 +113,7 @@ class LoMMuS {
 	}
 
 	/**
-	 * Sets up initial authentication and bot
-	 * logic, including CJS module loading
+	 * Sets up initial authentication and bot logic
 	 */
 	setupBot() {
 		// Fires when bot successfully authenticates via token
@@ -177,7 +198,17 @@ class LoMMuS {
 					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
 						.then(async () => {
 							setTimeout(() => process.exit(0), 10);
-						})
+						});
+					break;
+				}
+				case 'reload': {
+					console.log("Reloading modules...");
+
+					const embed = new EmbedBuilder()
+						.setAuthor({ name: 'Reloading modules', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+						.setColor(colors.GRAY)
+						.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 					break;
 				}
 			}

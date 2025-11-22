@@ -11,6 +11,11 @@ const commands = [
 		.setDescription('Bippidy Boppidy Ska')
 		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
 
+	new SlashCommandBuilder()
+		.setName('reload')
+		.setDescription('Reloads all of the bot\'s modules')
+		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+
 	// kill bot
 	new SlashCommandBuilder()
 		.setName('kill')
