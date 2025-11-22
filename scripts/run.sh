@@ -9,7 +9,7 @@ pm2 set pm2-logrotate:rotateInterval '0 0 * * *'
 
 pm2 restart pm2-logrotate
 
-pm2 start lorem.js \
-  --name="Lorem" \
+pm2 start lommus.js \
+  --name="LoMMuS" \
   --node-args="--enable-source-maps --trace-warnings --trace-deprecation" \
   --stop-exit-codes=0
