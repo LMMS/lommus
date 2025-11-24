@@ -9,5 +9,6 @@ import jsonConfig from '../../config.json' with { type: 'json' };
 export const config = {
 	guildId: jsonConfig.guildId,
 	clientId: jsonConfig.clientId,
-	github: jsonConfig.github
-}
+	github: jsonConfig.github,
+	greeted: ('greeted' in jsonConfig) ? jsonConfig.greeted : false
+};
