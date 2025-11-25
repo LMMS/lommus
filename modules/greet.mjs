@@ -8,7 +8,8 @@ export default class GreetModule extends BotModule {
 		super(
 			'Greeting',
 			'should only fire once, when `greeted` is unset/false in `config.json`',
-			[]
+			[],
+			true
 		);
 	}
 	/** @param {import('discord.js').Client} client */
