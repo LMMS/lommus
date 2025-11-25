@@ -1,11 +1,11 @@
-
 import { colors } from './colors.mjs';
 
 export class BotModule {
 	name = "";
 	description = "";
-	listeners = [""];
+	listeners = [];
 	colors = colors;
+	disabled = false;
 
 	/**
 	 * Constructs a bot module
@@ -13,12 +13,14 @@ export class BotModule {
 	 * @param {string} name The name of the module
 	 * @param {string} description The description of the module
 	 * @param {string[]} listeners What events does the module listen to?
+	 * @param {boolean} disabled is the module disabled or not?
 	 */
-	constructor (name, description, listeners) {
+	constructor (name, description, listeners, disabled) {
 		if (this.constructor == BotModule) throw new Error("Abstract classes can't be instantiated");
 		this.name = name;
 		this.description = description;
 		this.listeners = this.listeners.concat(listeners);
+		this.disabled = disabled
 	}
 
 	/**
