@@ -1,16 +1,22 @@
 {
-    "_IMPORTANT": "rename this to config.json and change these default values."
-    "ownerId": "<your discord user ID here>",
-    "clientId": "<the bot's applicaton ID here>",
-    "guildId": "<the server's ID here>",
-    "github": {
-    "allowedOrgs": ["LMMS"],
-    "defaultRepo": "lmms"
-    },
-  	"green": "#2c974f",
-  	"blue": "#2d80c0",
-  	"yellow": "#ecd10f",
-  	"orange": "ec7a0f",
-  	"red": "#bb2222",
-  	"gray": "#999999"
+  "_IMPORTANT": "rename this to config.json and change these default values",
+  "ownerId": "<your discord user ID here>",
+  "clientId": "<the bot's applicaton ID here>",
+  "guildId": "<the server's ID here>",
+  "github": {
+		"allowedOrgs": [
+			"LMMS",
+			"calf-studio-gear",
+			"Audacity",
+			"FluidSynth",
+			"zynaddsubfx"
+		],
+		"defaultRepo": "lmms"
+	},
+  "green": "#2c974f",
+  "blue": "#2d80c0",
+  "yellow": "#ecd10f",
+  "orange": "ec7a0f",
+  "red": "#bb2222",
+  "gray": "#999999"
 }
