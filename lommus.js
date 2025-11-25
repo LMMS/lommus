@@ -61,6 +61,8 @@ class LoMMuS {
 	async loadESModules() {
 		console.log("Initializing ES module loading...");
 
+		this.registeredModules = []
+
 		const moduleFiles = fs
 			.readdirSync('./modules')
 			.filter(file => file.endsWith('.mjs'));
@@ -88,6 +90,10 @@ class LoMMuS {
 
 			try {
 				instance = new mod.default();
+				if (instance.disabled) {
+					console.warn(`Module '${file}' is disabled, skipping.`);
+					return;
+				};
 			} catch (err) {
 				console.warn(`Ignoring '${file}', could not instantiate default export`);
 				continue;
