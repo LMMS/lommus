@@ -33,18 +33,15 @@ export default class SlashCommandsModule extends BotModule {
 						console.warn(interaction.user);
 					} else {
 						console.log("Restarting...");
+
 						const embed = new EmbedBuilder()
 							.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
 							.setColor(this.colors.RED)
 							.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
 
-						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-							.then(async () => {
-								setTimeout(() => process.exit(1), 1000);
-							})
-							.catch(error => {
-								throw new Error(`Unable to restart properly! ${error}`);
-							});
+						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+						setTimeout(() => process.exit(1), 1000);
 					}
 					break;
 				}
