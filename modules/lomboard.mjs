@@ -20,7 +20,12 @@ export default class LomboardModule extends BotModule {
 	reactionsNeeded = 10;
 
 	constructor () {
-		super('Lomboard', 'Starboard, Lommus Edition', ['messageReactionAdd', 'messageReactionRemove']);
+		super(
+			'Lomboard',
+			'Starboard, Lommus Edition',
+			['messageReactionAdd', 'messageReactionRemove'],
+			true
+		);
 	}
 	/** @param {import('discord.js').Client} client */
 	init(client) {
