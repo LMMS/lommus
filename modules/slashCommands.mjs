@@ -27,7 +27,9 @@ export default class SlashCommandsModule extends BotModule {
 						!interaction.memberPermissions?.any(PermissionFlagsBits.BanMembers)
 						|| interaction.user.id !== config.ownerId
 					) {
-						await interaction.reply({ content: "You do not have the permissions to use this command!", flags: MessageFlags.Ephemeral });
+						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+						console.warn("Unprivileged user tried to run command:");
+						console.warn(interaction.user);
 					} else {
 						console.log("Restarting...");
 						const embed = new EmbedBuilder()
@@ -67,7 +69,9 @@ export default class SlashCommandsModule extends BotModule {
 						!interaction.memberPermissions?.any(PermissionFlagsBits.BanMembers)
 						|| interaction.user.id !== config.ownerId
 					) {
-						await interaction.reply({ content: "You do not have the permissions to use this command!", flags: MessageFlags.Ephemeral });
+						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+						console.warn("Unprivileged user tried to run command:");
+						console.warn(interaction.user);
 					} else {
 						console.log("Killing bot...");
 
@@ -89,7 +93,9 @@ export default class SlashCommandsModule extends BotModule {
 						!interaction.memberPermissions?.any(PermissionFlagsBits.BanMembers)
 						|| interaction.user.id !== config.ownerId
 					) {
-						await interaction.reply({ content: "You do not have the permissions to use this command!", flags: MessageFlags.Ephemeral });
+						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+						console.warn("Unprivileged user tried to run command:");
+						console.warn(interaction.user);
 					} else {
 						console.log("Reloading modules...");
 
