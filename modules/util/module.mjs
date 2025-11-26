@@ -44,7 +44,7 @@ export class BotModule {
 	 * @param {string[]} listeners What events does the module listen to?
 	 * @param {boolean?} disabled is the module disabled or not?
 	 */
-	constructor (name, description, listeners, disabled) {
+	constructor (name, description, listeners, disabled = false) {
 		if (this.constructor == BotModule) throw new Error("Abstract classes can't be instantiated");
 		this.name = name;
 		this.description = description;
