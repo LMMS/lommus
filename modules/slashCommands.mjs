@@ -1,6 +1,6 @@
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
-import { EmbedBuilder, Events, MessageFlags } from 'discord.js';
+import { EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
 
 export default class SlashCommandsModule extends BotModule {
 	constructor () {
@@ -23,19 +23,26 @@ export default class SlashCommandsModule extends BotModule {
 
 			switch (interaction.commandName) {
 				case 'restart': {
-					console.log("Restarting...");
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-						.setColor(this.colors.RED)
-						.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
+					if (
+						!interaction.memberPermissions?.any(PermissionFlagsBits.BanMembers)
+						|| interaction.user.id !== config.ownerId
+					) {
+						await interaction.reply({ content: "You do not have the permissions to use this command!", flags: MessageFlags.Ephemeral });
+					} else {
+						console.log("Restarting...");
+						const embed = new EmbedBuilder()
+							.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+							.setColor(this.colors.RED)
+							.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
 
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-						.then(async () => {
-							setTimeout(() => process.exit(1), 1000);
-						})
-						.catch(error => {
-							throw new Error(`Unable to restart properly! ${error}`);
-						});
+						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+							.then(async () => {
+								setTimeout(() => process.exit(1), 1000);
+							})
+							.catch(error => {
+								throw new Error(`Unable to restart properly! ${error}`);
+							});
+					}
 					break;
 				}
 
@@ -56,28 +63,42 @@ export default class SlashCommandsModule extends BotModule {
 				}
 
 				case 'kill': {
-					console.log("Killing bot...");
+					if (
+						!interaction.memberPermissions?.any(PermissionFlagsBits.BanMembers)
+						|| interaction.user.id !== config.ownerId
+					) {
+						await interaction.reply({ content: "You do not have the permissions to use this command!", flags: MessageFlags.Ephemeral });
+					} else {
+						console.log("Killing bot...");
 
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Exiting bot', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-						.setColor(this.colors.RED)
-						.setDescription('Goodbye world.');
+						const embed = new EmbedBuilder()
+							.setAuthor({ name: 'Exiting bot', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+							.setColor(this.colors.RED)
+							.setDescription('Goodbye world.');
 
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-						.then(async () => {
-							setTimeout(() => process.exit(0), 10);
-						});
+						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+							.then(async () => {
+								setTimeout(() => process.exit(0), 10);
+							});
+					}
 					break;
 				}
 
 				case 'reload': {
-					console.log("Reloading modules...");
+					if (
+						!interaction.memberPermissions?.any(PermissionFlagsBits.BanMembers)
+						|| interaction.user.id !== config.ownerId
+					) {
+						await interaction.reply({ content: "You do not have the permissions to use this command!", flags: MessageFlags.Ephemeral });
+					} else {
+						console.log("Reloading modules...");
 
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Reloading modules', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-						.setColor(this.colors.GRAY)
-						.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+						const embed = new EmbedBuilder()
+							.setAuthor({ name: 'Reloading modules', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+							.setColor(this.colors.GRAY)
+							.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
+						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+					}
 					break;
 				}
 			}
