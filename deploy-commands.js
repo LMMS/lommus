@@ -20,7 +20,7 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName('kill')
 		.setDescription('Was I not good enough?')
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
 
 	// say
 	new SlashCommandBuilder()
