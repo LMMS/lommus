@@ -7,7 +7,8 @@ export default class LoggingModule extends BotModule {
 		super(
 			'Logging',
 			'The Big Brother module.',
-			['messageUpdate', 'messageDelete', 'guildMemberAdd', 'guildMemberRemove', 'guildMemberUpdate', 'roleCreate', 'roleDelete']
+			['messageUpdate', 'messageDelete', 'guildMemberAdd', 'guildMemberRemove', 'guildMemberUpdate', 'roleCreate', 'roleDelete'],
+			true
 		);
 	}
 
