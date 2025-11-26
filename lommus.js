@@ -51,7 +51,6 @@ class LoMMuS {
 	constructor (token) {
 		console.log("Instantiating LoMMuS...");
 		this.setupBot();
-		this.setupSlashCommands();
 		this.client.login(token);
 	}
 
@@ -146,80 +145,6 @@ class LoMMuS {
 		});
 
 		console.log("Initial bot setup done!");
-	}
-
-	/**
-	 * Sets up slash command logic
-	 */
-	setupSlashCommands() {
-		// Fires once for each slash command sent by users
-		this.client.on(Events.InteractionCreate, async (interaction) => {
-			if (!interaction || !interaction.channel || !interaction.guild) {
-				console.error("Interaction is not configured correctly! Has slash commands been registered yet?");
-				return;
-			}
-
-			// Screen bad command interactions
-			if (!interaction.isChatInputCommand()) return;
-
-			switch (interaction.commandName) {
-				case 'restart': {
-					console.log("Restarting...");
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-						.setColor(colors.RED)
-						.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
-
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-						.then(async () => {
-							setTimeout(() => process.exit(1), 1000);
-						})
-						.catch(error => {
-							throw new Error(`Unable to restart properly! ${error}`);
-						});
-					break;
-				}
-				case 'say': {
-					const msg = interaction.options.getString('message') ?? "";
-
-					interaction.reply({ content: 'Message said', flags: MessageFlags.Ephemeral });
-					// @ts-ignore
-					await interaction.channel.send({ content: msg });
-					break;
-				}
-				case 'toggle': {
-					const toggleType = interaction.options.getString('function');
-
-					// noop for now
-					break;
-				}
-				case 'kill': {
-					console.log("Killing bot...");
-
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Exiting bot', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-						.setColor(colors.RED)
-						.setDescription('Goodbye world.');
-
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-						.then(async () => {
-							setTimeout(() => process.exit(0), 10);
-						});
-					break;
-				}
-				case 'reload': {
-					console.log("Reloading modules...");
-
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Reloading modules', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-						.setColor(colors.GRAY)
-						.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-					break;
-				}
-			}
-		});
-		console.log("Slash command setup done!");
 	}
 }
 
