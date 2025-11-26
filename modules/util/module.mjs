@@ -1,10 +1,39 @@
 import { colors } from './colors.mjs';
 
 export class BotModule {
+	/**
+	 * Name of the module
+	 *
+	 * @type {string}
+	 */
 	name = "";
+
+	/**
+	 * The description of the module
+	 *
+	 * @type {string}
+	 */
 	description = "";
+
+	/**
+	 * What events the module listens to
+	 *
+	 * @type {string[]}
+	 */
 	listeners = [];
+
+	/**
+	 * Cached color object
+	 *
+	 * @type {typeof colors}
+	 */
 	colors = colors;
+
+	/**
+	 * Is the module disabled or not?
+	 *
+	 * @type {boolean}
+	 */
 	disabled = false;
 
 	/**
@@ -20,7 +49,7 @@ export class BotModule {
 		this.name = name;
 		this.description = description;
 		this.listeners = this.listeners.concat(listeners);
-		this.disabled = disabled
+		this.disabled = disabled;
 	}
 
 	/**
