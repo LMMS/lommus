@@ -91,7 +91,7 @@ class LoMMuS {
 				instance = new mod.default();
 				if (instance.disabled) {
 					console.warn(`Module '${file}' is disabled, skipping.`);
-					return;
+					continue;
 				};
 			} catch (err) {
 				console.warn(`Ignoring '${file}', could not instantiate default export`);
