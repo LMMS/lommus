@@ -1,6 +1,7 @@
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
 import { EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { LOMMUS } from '../lommus.js';
 
 export default class SlashCommandsModule extends BotModule {
 	constructor () {
@@ -103,7 +104,10 @@ export default class SlashCommandsModule extends BotModule {
 							.setAuthor({ name: 'Reloading modules', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
 							.setColor(this.colors.GRAY)
 							.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
+
 						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+						await LOMMUS.loadESModules();
 					}
 					break;
 				}

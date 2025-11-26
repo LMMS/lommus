@@ -152,4 +152,5 @@ class LoMMuS {
 process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error));
 
 // final token check
-export const LOMMUS = (process.env.TOKEN) ? new LoMMuS(process.env.TOKEN) : console.error("Token not found in env!");
+/** @type {LoMMuS} */
+export const LOMMUS = /** @type {LoMMuS} */ ((process.env.TOKEN) ? new LoMMuS(process.env.TOKEN) : console.error("Token not found in env!"));
