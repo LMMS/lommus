@@ -25,7 +25,7 @@ export default class SlashCommandsModule extends BotModule {
 				case 'restart': {
 					if (
 						!interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers)
-						|| interaction.user.id === config.ownerId
+						&& (interaction.user.id === config.ownerId)
 					) {
 						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
 						console.warn("Unprivileged user tried to run command:");
@@ -67,7 +67,7 @@ export default class SlashCommandsModule extends BotModule {
 				case 'kill': {
 					if (
 						!interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers)
-						|| interaction.user.id === config.ownerId
+						&& (interaction.user.id === config.ownerId)
 					) {
 						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
 						console.warn("Unprivileged user tried to run command:");
@@ -91,7 +91,7 @@ export default class SlashCommandsModule extends BotModule {
 				case 'reload': {
 					if (
 						!interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers)
-						|| interaction.user.id === config.ownerId
+						&& !(interaction.user.id === config.ownerId)
 					) {
 						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
 						console.warn("Unprivileged user tried to run command:");
