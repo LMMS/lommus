@@ -8,19 +8,16 @@ const commands = [
 	// restart
 	new SlashCommandBuilder()
 		.setName('restart')
-		.setDescription('Bippidy Boppidy Ska')
-		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+		.setDescription('Bippidy Boppidy Ska'),
 
 	new SlashCommandBuilder()
 		.setName('reload')
-		.setDescription('Reloads all of the bot\'s modules')
-		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+		.setDescription('Reloads all of the bot\'s modules'),
 
 	// kill bot
 	new SlashCommandBuilder()
 		.setName('kill')
-		.setDescription('Was I not good enough?')
-		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+		.setDescription('Was I not good enough?'),
 
 	// say
 	new SlashCommandBuilder()
