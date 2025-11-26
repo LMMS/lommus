@@ -7,8 +7,9 @@ import jsonConfig from '../../config.json' with { type: 'json' };
  * @constant
  */
 export const config = {
-	guildId: jsonConfig.guildId,
+	ownerId: jsonConfig.ownerId,
 	clientId: jsonConfig.clientId,
+	guildId: jsonConfig.guildId,
 	github: jsonConfig.github,
 	greeted: ('greeted' in jsonConfig) ? jsonConfig.greeted : false
 };
