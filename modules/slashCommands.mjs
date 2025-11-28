@@ -1,6 +1,6 @@
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
-import { EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { ChatInputCommandInteraction, EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { LOMMUS } from '../lommus.js';
 
 export default class SlashCommandsModule extends BotModule {
@@ -11,6 +11,34 @@ export default class SlashCommandsModule extends BotModule {
 			["interactionCreate"]
 		);
 	}
+	/**
+	 * Checks whether the user has proper permissions, or is of the configured ID
+	 *
+	 * @param {import('discord.js').Interaction<import('discord.js').CacheType>} interaction The interaction to pass
+	 * @param {import('discord.js').PermissionFlagsBits} bits The permission bits to check
+	 * @param {string} id The user ID to check
+	 * @returns {boolean}
+	 */
+	checkPerms(interaction, bits, id) {
+		return (
+			interaction.memberPermissions?.has(bits)
+			|| (interaction.user.id === id)
+		);
+	}
+
+	/**
+	 * Rejects a given command interaction
+	 *
+	 * @param {ChatInputCommandInteraction<import('discord.js').CacheType>} interaction The interaction to pass here
+	 */
+	async rejectUnprivilegedCommand(interaction) {
+		const { id, globalName, username } = interaction.user;
+
+		await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+
+		console.warn(`Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
+	}
+
 	/** @param {import('discord.js').Client} client */
 	init(client) {
 		client.on(Events.InteractionCreate, async (interaction) => {
@@ -24,14 +52,7 @@ export default class SlashCommandsModule extends BotModule {
 
 			switch (interaction.commandName) {
 				case 'restart': {
-					if (
-						!interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers)
-						&& !(interaction.user.id === config.ownerId)
-					) {
-						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
-						console.warn("Unprivileged user tried to run command:");
-						console.warn(interaction.user);
-					} else {
+					if (this.checkPerms(interaction, PermissionFlagsBits.BanMembers, config.ownerId)) {
 						console.log("Restarting...");
 
 						const embed = new EmbedBuilder()
@@ -42,6 +63,8 @@ export default class SlashCommandsModule extends BotModule {
 						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 
 						setTimeout(() => process.exit(1), 1000);
+					} else {
+						await this.rejectUnprivilegedCommand(interaction);
 					}
 					break;
 				}
@@ -63,14 +86,7 @@ export default class SlashCommandsModule extends BotModule {
 				}
 
 				case 'kill': {
-					if (
-						!interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers)
-						&& !(interaction.user.id === config.ownerId)
-					) {
-						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
-						console.warn("Unprivileged user tried to run command:");
-						console.warn(interaction.user);
-					} else {
+					if (this.checkPerms(interaction, PermissionFlagsBits.BanMembers, config.ownerId)) {
 						console.log("Killing bot...");
 
 						const embed = new EmbedBuilder()
@@ -82,19 +98,14 @@ export default class SlashCommandsModule extends BotModule {
 							.then(async () => {
 								setTimeout(() => process.exit(0), 10);
 							});
+					} else {
+						this.rejectUnprivilegedCommand(interaction);
 					}
 					break;
 				}
 
 				case 'reload': {
-					if (
-						!interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers)
-						&& !(interaction.user.id === config.ownerId)
-					) {
-						await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
-						console.warn("Unprivileged user tried to run command:");
-						console.warn(interaction.user);
-					} else {
+					if (this.checkPerms(interaction, PermissionFlagsBits.BanMembers, config.ownerId)) {
 						console.log("Reloading modules...");
 
 						const embed = new EmbedBuilder()
@@ -105,6 +116,8 @@ export default class SlashCommandsModule extends BotModule {
 						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 
 						await LOMMUS.loadESModules();
+					} else {
+						this.rejectUnprivilegedCommand(interaction);
 					}
 					break;
 				}
