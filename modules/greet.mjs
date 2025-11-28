@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { writeFileSync } from 'node:fs';
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
 import configJson from "../config.json" with {type: 'json'};
@@ -9,27 +9,26 @@ export default class GreetModule extends BotModule {
 			'Greeting',
 			'should only fire once, when `greeted` is unset/false in `config.json`',
 			[],
-			true
+			{ disabled: true }
 		);
 	}
 	/** @param {import('discord.js').Client} client */
 	init(client) {
-		(
-			/** @param {import('discord.js').Channel | null} channel The channel's reference' */
-			async (channel) => {
-				if (typeof config.greeted === "boolean" && config.greeted) return;
-				if (channel !== null && channel.isSendable()) {
-					let cfgClone = Object.assign(configJson, { greeted: true });
-					let cfgStringified = JSON.stringify(cfgClone, null, 2);
+		const channel = client.channels.cache.get('434753275485618176') ?? null;
 
-					channel.send("Hello world!");
+		if (typeof config.greeted === "boolean" && config.greeted) return;
 
-					try {
-						await writeFile('../config.json', cfgStringified);
-					} catch (error) {
-						console.error("Error writing to config file from Greeting module");
-					}
-				}
-			})(client.channels.cache.get('434753275485618176') ?? null);
+		if (channel !== null && channel.isSendable()) {
+			let cfgClone = Object.assign(configJson, { greeted: true });
+			let cfgStringified = JSON.stringify(cfgClone, null, 2);
+
+			channel.send("Hello world!");
+
+			try {
+				writeFileSync('../config.json', cfgStringified);
+			} catch (error) {
+				console.error("Error writing to config file from Greeting module");
+			}
+		}
 	}
 }
