@@ -10,6 +10,13 @@ export default class WatchdogModule extends BotModule {
 	urlReg = RegExp(/https?:\/\/\w+/, "i");
 
 	/**
+	 * The string ID of the #resources channel
+	 *
+	 * @type {string}
+	 */
+	resourcesChannelId = "203559236729438208"
+
+	/**
 	 * Creates an instance of WatchdogModule.
 	 *
 	 * @constructor
@@ -64,6 +71,31 @@ export default class WatchdogModule extends BotModule {
 		this.client.on(Events.MessageCreate, async (message) => {
 			if (message.author.bot) return;
 
+			// #resouces image/link handler
+			if (message.channelId === this.resourcesChannelId) {
+				// is it a staff? does it have no url and attachments?
+				if (
+					message.member
+					&& message.member.permissions.has(PermissionFlagsBits.BanMembers)
+					|| !this.urlReg.test(message.content)
+					&& message.attachments.size > 0
+				) {
+					message.react('✅');
+				}
+				else {
+					message.delete();
+					const embed = new EmbedBuilder()
+						.setColor(this.colors.RED)
+						.setDescription('This channel is for sharing presets, samples, and LMMS themes you have the legal rights to share. This is not a discussion or request channel. Please do not share binaries or links to external resources.');
+
+					message.channel.send({ embeds: [embed] })
+						.then(async sentMessage => {
+							await wait(10000);
+							sentMessage.delete();
+						});
+				}
+			}
+
 			/* // Spam filtering
 			const spamType = spamCheck(message);
 			if (spamType) {
@@ -94,31 +126,6 @@ export default class WatchdogModule extends BotModule {
 				await message.guild.channels.cache.find(channel => channel.name === 'mod')
 					.send({ embeds: [modEmbed] });
 			} */
-
-			// resouces image/link handler
-			if ('name' in message.channel && message.channel.name === 'resources') {
-				// is it a staff? does it have no url and attachments?
-				if (
-					message.member
-					&& message.member.permissions.has(PermissionFlagsBits.BanMembers)
-					|| !this.urlReg.test(message.content)
-					&& message.attachments.size > 0
-				) {
-					message.react('✅');
-				}
-				else {
-					message.delete();
-					const embed = new EmbedBuilder()
-						.setColor(this.colors.RED)
-						.setDescription('This channel is for sharing presets, samples, and LMMS themes you have the legal rights to share. This is not a discussion or request channel. Please do not share binaries or links to external resources.');
-
-					message.channel.send({ embeds: [embed] })
-						.then(async sentMessage => {
-							await wait(10000);
-							sentMessage.delete();
-						});
-				}
-			}
 		});
 	}
 }
