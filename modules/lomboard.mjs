@@ -24,7 +24,7 @@ export default class LomboardModule extends BotModule {
 			'Lomboard',
 			'Starboard, Lommus Edition',
 			['messageReactionAdd', 'messageReactionRemove'],
-			true
+			{ disabled: true }
 		);
 	}
 	/** @param {import('discord.js').Client} client */
