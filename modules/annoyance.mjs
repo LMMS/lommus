@@ -2,13 +2,25 @@ import { EmbedBuilder, Events } from 'discord.js';
 import { BotModule } from './util/module.mjs';
 
 export default class AnnoyanceModule extends BotModule {
-	constructor () {
-		super('Annoyance', 'sus module sus module', ['messageCreate']);
+
+	/**
+	 * Creates an instance of AnnoyanceModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client 
+	 */
+	constructor (client) {
+		super(
+			client,
+			'Annoyance',
+			'sus module sus module',
+			['messageCreate']
+		);
 	}
-	/** @param {import('discord.js').Client} client */
-	init(client) {
+
+	init() {
 		// meme messages
-		client.on(Events.MessageCreate, async (message) => {
+		this.client.on(Events.MessageCreate, async (message) => {
 			if (message.author.bot) return;
 			if ('name' in message.channel && message.channel.name === 'resources') return;
 

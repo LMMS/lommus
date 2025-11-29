@@ -4,8 +4,16 @@ import { ChatInputCommandInteraction, EmbedBuilder, Events, MessageFlags, Permis
 import { LOMMUS } from '../lommus.js';
 
 export default class SlashCommandsModule extends BotModule {
-	constructor () {
+
+	/**
+	 * Creates an instance of SlashCommandsModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
 		super(
+			client,
 			"Slash commands",
 			"Event handlers for slash commands",
 			["interactionCreate"]
@@ -39,9 +47,8 @@ export default class SlashCommandsModule extends BotModule {
 		console.warn(`Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
 	}
 
-	/** @param {import('discord.js').Client} client */
-	init(client) {
-		client.on(Events.InteractionCreate, async (interaction) => {
+	init() {
+		this.client.on(Events.InteractionCreate, async (interaction) => {
 			if (!interaction || !interaction.channel || !interaction.guild) {
 				console.error("Interaction is not configured correctly! Has slash commands been registered yet?");
 				return;

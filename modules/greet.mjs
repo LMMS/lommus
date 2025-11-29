@@ -4,17 +4,25 @@ import { config } from './util/config.mjs';
 import configJson from "../config.json" with {type: 'json'};
 
 export default class GreetModule extends BotModule {
-	constructor () {
+
+	/**
+	 * Creates an instance of GreetModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
 		super(
+			client,
 			'Greeting',
 			'should only fire once, when `greeted` is unset/false in `config.json`',
 			[],
 			{ disabled: true }
 		);
 	}
-	/** @param {import('discord.js').Client} client */
-	init(client) {
-		const channel = client.channels.cache.get('434753275485618176') ?? null;
+
+	init() {
+		const channel = this.client.channels.cache.get('434753275485618176') ?? null;
 
 		if (typeof config.greeted === "boolean" && config.greeted) return;
 

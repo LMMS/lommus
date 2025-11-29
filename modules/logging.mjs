@@ -3,8 +3,16 @@ import * as my_lzma from 'lzma';
 import { BotModule } from './util/module.mjs';
 
 export default class LoggingModule extends BotModule {
-	constructor () {
+
+	/**
+	 * Creates an instance of LoggingModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
 		super(
+			client,
 			'Logging',
 			'The Big Brother module.',
 			['messageUpdate', 'messageDelete', 'guildMemberAdd', 'guildMemberRemove', 'guildMemberUpdate', 'roleCreate', 'roleDelete'],
@@ -12,14 +20,13 @@ export default class LoggingModule extends BotModule {
 		);
 	}
 
-	/** @param {import('discord.js').Client} client */
-	init(client) {
+	init() {
 		/* =========================
 
 			Message Update Logging
 
 		===========================*/
-		client.on(Events.MessageUpdate, async (past, current) => {
+		this.client.on(Events.MessageUpdate, async (past, current) => {
 			if (current.partial) await current.fetch();
 
 			if (current.author.bot) return;
@@ -73,7 +80,7 @@ export default class LoggingModule extends BotModule {
 			Message Delete Logging
 
 		===========================*/
-		client.on(Events.MessageDelete, async (message) => {
+		this.client.on(Events.MessageDelete, async (message) => {
 			// Immediately return partials as they have no content to log
 			if (message.partial) return console.log(`${message.id} Uncached Message Deleted`);
 
@@ -109,7 +116,7 @@ export default class LoggingModule extends BotModule {
 			User Join Logging
 
 		===========================*/
-		client.on(Events.GuildMemberAdd, async (member) => {
+		this.client.on(Events.GuildMemberAdd, async (member) => {
 			member.client.user.setActivity(`${member.guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 			const embed = new EmbedBuilder()
@@ -137,7 +144,7 @@ export default class LoggingModule extends BotModule {
 			User Leave Logging
 
 		===========================*/
-		client.on(Events.GuildMemberRemove, async (member) => {
+		this.client.on(Events.GuildMemberRemove, async (member) => {
 			member.client.user.setActivity(`${member.guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 			const embed = new EmbedBuilder()
@@ -161,7 +168,7 @@ export default class LoggingModule extends BotModule {
 			User Update Logging
 
 		===========================*/
-		client.on(Events.GuildMemberUpdate, async (past, current) => {
+		this.client.on(Events.GuildMemberUpdate, async (past, current) => {
 			const embed = new EmbedBuilder()
 				.setColor('#999999')
 				.setTimestamp()
@@ -211,7 +218,7 @@ export default class LoggingModule extends BotModule {
 			Role Create Logging
 
 		===========================*/
-		client.on(Events.GuildRoleCreate, async (role) => {
+		this.client.on(Events.GuildRoleCreate, async (role) => {
 			const embed = new EmbedBuilder()
 				.setColor(this.colors.GREEN)
 				.setTimestamp()
@@ -243,7 +250,7 @@ export default class LoggingModule extends BotModule {
 			Role Delete Logging
 
 		===========================*/
-		client.on(Events.GuildRoleDelete, async (role) => {
+		this.client.on(Events.GuildRoleDelete, async (role) => {
 
 			const embed = new EmbedBuilder()
 				.setColor(this.colors.RED)

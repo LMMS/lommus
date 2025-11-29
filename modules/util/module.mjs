@@ -1,6 +1,14 @@
 import { colors } from './colors.mjs';
 
 export class BotModule {
+
+	/**
+	 * The reference to the client
+	 *
+	 * @type {import('discord.js').Client}
+	 */
+	client;
+
 	/**
 	 * Name of the module
 	 *
@@ -39,13 +47,16 @@ export class BotModule {
 	/**
 	 * Constructs a bot module
 	 * @abstract
+	 * @param {import('discord.js').Client} client The bot client
 	 * @param {string} name The name of the module
 	 * @param {string} description The description of the module
 	 * @param {string[]} listeners What events does the module listen to?
 	 * @param {{ disabled?: boolean } | undefined} config Configuration options
 	 */
-	constructor (name, description, listeners, config = { disabled: false }) {
+	constructor (client, name, description, listeners, config = { disabled: false }) {
 		if (this.constructor == BotModule) throw new Error("Abstract classes can't be instantiated");
+		this.client = client;
+
 		this.name = name;
 		this.description = description;
 		this.listeners = this.listeners.concat(listeners);
@@ -56,9 +67,8 @@ export class BotModule {
 	 * Abstract class for initializing the module.
 	 *
 	 * Analogous to the `.execute()` method
-	 * @param {import('discord.js').Client} client
 	 */
-	init(client) {
+	init() {
 		throw new Error("Method `init()` must be implemented by subclasses");
 	}
 }

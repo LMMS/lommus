@@ -10,15 +10,22 @@ export default class InfoEmbedModule extends BotModule {
 	 */
 	rulelist = JSON.parse(fs.readFileSync('./data/rules.json', { 'encoding': 'utf-8' }));
 
-	constructor () {
+	/**
+	 * Creates an instance of InfoEmbedModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
 		super(
+			client,
 			'Info Embed',
 			'Handles #info embed, embed buttons, and breakout commands.',
 			['interactionCreate, messageCreate']
 		);
 	}
-	/** @param {import('discord.js').Client} client */
-	init(client) {
+
+	init() {
 		/**
 		 * Convenient integer to UTF emoji converter function
 		 *
@@ -40,7 +47,7 @@ export default class InfoEmbedModule extends BotModule {
 		}
 
 		// When client fires interactionCreate (redundant across all modules)
-		client.on(Events.InteractionCreate, async (interaction) => {
+		this.client.on(Events.InteractionCreate, async (interaction) => {
 			// manual stealth command for making info embed
 			if (interaction.isChatInputCommand() && interaction.commandName === 'infoembed') {
 				if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {

@@ -3,17 +3,24 @@ import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
 
 export default class GitHubIssueParserModule extends BotModule {
-	constructor () {
+
+	/**
+	 * Creates an instance of GitHubIssueParserModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
 		super(
+			client,
 			'Github Issue Parser',
 			'Parses #discriminators and links respective issue/pull requests',
 			['messageCreate']
 		);
 	}
 
-	/** @param {import('discord.js').Client} client */
-	init(client) {
-		client.on(Events.MessageCreate, async (message) => {
+	init() {
+		this.client.on(Events.MessageCreate, async (message) => {
 			// Only process messages containing a #
 			if (message.author.bot || !message.content.includes('#')) return;
 
@@ -75,28 +82,28 @@ export default class GitHubIssueParserModule extends BotModule {
 
 							// If Else stack to set status to proper emoji. should probably be a switch case in hindsight
 							if (data.pull_request === undefined && data.state === 'open') {
-								status = client.emojis.cache.find(emoji => emoji.name === 'issue_opened');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'issue_opened');
 							}
 							else if (data.pull_request === undefined && data.state_reason === 'completed') {
-								status = client.emojis.cache.find(emoji => emoji.name === 'issue_closed');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'issue_closed');
 							}
 							else if (data.pull_request === undefined && data.state_reason === 'not_planned') {
-								status = client.emojis.cache.find(emoji => emoji.name === 'issue_not_planned');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'issue_not_planned');
 							}
 							else if (data.pull_request.url && data.draft) {
-								status = client.emojis.cache.find(emoji => emoji.name === 'pr_draft');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'pr_draft');
 							}
 							else if (data.pull_request.url && data.state === 'open') {
-								status = client.emojis.cache.find(emoji => emoji.name === 'pr_opened');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'pr_opened');
 							}
 							else if (data.pull_request.url && data.pull_request.merged_at) {
-								status = client.emojis.cache.find(emoji => emoji.name === 'pr_merged');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'pr_merged');
 							}
 							else if (data.pull_request.url && data.state === 'closed') {
-								status = client.emojis.cache.find(emoji => emoji.name === 'pr_closed');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'pr_closed');
 							}
 							else {
-								status = client.emojis.cache.find(emoji => emoji.name === 'spoopy');
+								status = this.client.emojis.cache.find(emoji => emoji.name === 'spoopy');
 							}
 
 							// Push new pretty link to output array

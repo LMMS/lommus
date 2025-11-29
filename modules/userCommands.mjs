@@ -3,13 +3,25 @@ import fs from 'node:fs';
 import { BotModule } from './util/module.mjs';
 
 export default class UserCommandsModule extends BotModule {
-	constructor () {
-		super('User Commands', 'permissionless commands for users', ['interactionCreate']);
+
+	/**
+	 * Creates an instance of UserCommandsModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
+		super(
+			client,
+			'User Commands',
+			'permissionless commands for users',
+			['interactionCreate']
+		);
 
 	}
-	/** @param {import('discord.js').Client} client */
-	init(client) {
-		client.on(Events.InteractionCreate, async interaction => {
+
+	init() {
+		this.client.on(Events.InteractionCreate, async (interaction) => {
 			if (!interaction.isChatInputCommand()) return;
 
 			// Whois

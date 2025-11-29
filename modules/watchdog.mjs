@@ -9,11 +9,22 @@ export default class WatchdogModule extends BotModule {
 	 */
 	urlReg = RegExp(/https?:\/\/\w+/, "i");
 
-	constructor () {
-		super('Watchdog', "oh no you didn't.", ['messageCreate']);
+	/**
+	 * Creates an instance of WatchdogModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
+		super(
+			client,
+			'Watchdog',
+			"oh no you didn't.",
+			['messageCreate']
+		);
 	}
-	/** @param {import('discord.js').Client} client */
-	init(client) {
+
+	init() {
 
 		/*	// Search Functions
 		const multiSearchOr = (text, searchWords) => (
@@ -50,7 +61,7 @@ export default class WatchdogModule extends BotModule {
 			}
 		} */
 
-		client.on(Events.MessageCreate, async (message) => {
+		this.client.on(Events.MessageCreate, async (message) => {
 			if (message.author.bot) return;
 
 			/* // Spam filtering

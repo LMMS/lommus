@@ -88,7 +88,7 @@ class LoMMuS {
 			let instance;
 
 			try {
-				instance = new mod.default();
+				instance = new mod.default(this.client);
 				if (instance.disabled) {
 					console.warn(`Module '${file}' is disabled, skipping.`);
 					continue;
@@ -99,7 +99,7 @@ class LoMMuS {
 			}
 
 			try {
-				instance.init(this.client);
+				instance.init();
 				this.#checkLoadedModules(instance.name);
 				console.log(`'${instance.name}' module loaded`);
 			} catch (err) {

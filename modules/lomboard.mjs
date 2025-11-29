@@ -19,17 +19,24 @@ export default class LomboardModule extends BotModule {
 	 */
 	reactionsNeeded = 10;
 
-	constructor () {
+	/**
+	 * Creates an instance of LomboardModule.
+	 *
+	 * @constructor
+	 * @param {import('discord.js').Client} client
+	 */
+	constructor (client) {
 		super(
+			client,
 			'Lomboard',
 			'Starboard, Lommus Edition',
 			['messageReactionAdd', 'messageReactionRemove'],
 			{ disabled: true }
 		);
 	}
-	/** @param {import('discord.js').Client} client */
-	init(client) {
-		client.on(Events.MessageReactionAdd, async (reaction, user) => {
+
+	init() {
+		this.client.on(Events.MessageReactionAdd, async (reaction, user) => {
 			if (reaction.partial) await reaction.fetch();
 			const message = reaction.message;
 			const emojiIdCache = message.reactions.cache.get(this.emojiId);
