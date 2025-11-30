@@ -2,8 +2,7 @@ import fs from 'node:fs';
 
 import * as dotenv from 'dotenv';
 dotenv.config({ quiet: true });
-import { ActivityType, Client, EmbedBuilder, Events, GatewayIntentBits, MessageFlags, Partials } from 'discord.js';
-import { colors } from './modules/util/colors.mjs';
+import { ActivityType, Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { config } from './modules/util/config.mjs';
 
 console.log("LoMMuS is initializing...");
