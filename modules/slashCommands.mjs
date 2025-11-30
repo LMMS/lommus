@@ -26,7 +26,7 @@ export default class SlashCommandsModule extends BotModule {
 	 *
 	 * @param {import('discord.js').Interaction<import('discord.js').CacheType>} interaction The interaction to pass
 	 * @param {import('discord.js').PermissionFlagsBits} bits The permission bits to check
-	 * @param {string} id The user ID to check
+	 * @param {string?} id The user ID to check
 	 * @returns {boolean}
 	 */
 	checkPerms(interaction, bits, id) {
@@ -229,21 +229,25 @@ export default class SlashCommandsModule extends BotModule {
 				}
 
 				case 'dump': {
-					const loadedLOMMUSModules = LOMMUS.registeredModules
-						.map((moduleName, i) => `${i + 1}. ${moduleName}`)
-						.join('\n');
+					if (this.checkPerms(interaction, PermissionFlagsBits.KickMembers, config.ownerId)) {
+						const loadedLOMMUSModules = LOMMUS.registeredModules
+							.map((moduleName, i) => `${i + 1}. ${moduleName}`)
+							.join('\n');
 
-					const embed = new EmbedBuilder()
-						.setDescription(
-							`\`config.json\`
+						const embed = new EmbedBuilder()
+							.setDescription(
+								`\`config.json\`
 							\`\`\`json\n${JSON.stringify(config, null, 2)}\`\`\`
 							**Loaded modules**
 							${loadedLOMMUSModules}`
-						)
-						.setAuthor({ name: `${new Date().toISOString()}` })
-						.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
+							)
+							.setAuthor({ name: `${new Date().toISOString()}` })
+							.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
 
-					await interaction.reply({ embeds: [embed] });
+						await interaction.reply({ embeds: [embed] });
+					} else {
+						await this.rejectUnprivilegedCommand(interaction);
+					}
 					break;
 				}
 			}
