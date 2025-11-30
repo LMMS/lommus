@@ -223,6 +223,25 @@ export default class SlashCommandsModule extends BotModule {
 					if ('topic' in interaction.channel) embed.setDescription(interaction.channel.topic);
 					await interaction.reply({ embeds: [embed] });
 				}
+
+				case 'dump': {
+					const embed = new EmbedBuilder()
+						.setDescription(
+							`**Configuration**
+							\`\`\`json
+							${JSON.stringify(config)}
+							\`\`\`
+							\n\n
+							**Loaded modules**\n
+							${LOMMUS.registeredModules.map((moduleName, i) => {
+								`${i + 1}. ${moduleName}\n`;
+							})}`
+						)
+						.setAuthor({ name: `Time: ${new Date().toISOString()} | Mem usage (resident set size): ${process.memoryUsage().rss}` });
+
+					await interaction.reply({ embeds: [embed] });
+					break;
+				}
 			}
 		});
 	}

@@ -5,6 +5,11 @@ import { config } from './modules/util/config.mjs';
 
 // Manual command builder for now
 const commands = [
+	// dump
+	new SlashCommandBuilder()
+		.setName('dump')
+		.setDescription('Dumps info about the bot'),
+
 	// restart
 	new SlashCommandBuilder()
 		.setName('restart')
