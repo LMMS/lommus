@@ -5,6 +5,7 @@
   "main": "lommus.js",
   "type": "module",
   "dependencies": {
+    "bytes-formatter": "^21.6.15",
     "discord.js": "14.25.1",
     "dotenv": "17.2.3",
     "lzma": "^2.3.2",

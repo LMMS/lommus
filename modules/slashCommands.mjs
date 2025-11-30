@@ -3,6 +3,7 @@ import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
 import { ChatInputCommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, time } from 'discord.js';
 import { LOMMUS } from '../lommus.js';
+import { formatBytes } from 'bytes-formatter';
 
 export default class SlashCommandsModule extends BotModule {
 
@@ -15,7 +16,7 @@ export default class SlashCommandsModule extends BotModule {
 	constructor (client) {
 		super(
 			client,
-			"Slash commands",
+			"Slash Commands",
 			"Event handlers for slash commands",
 			["interactionCreate"]
 		);
@@ -76,7 +77,7 @@ export default class SlashCommandsModule extends BotModule {
 
 						setTimeout(() => process.exit(1), 1000);
 					} else {
-						await this.rejectUnprivilegedCommand(interaction);
+						return await this.rejectUnprivilegedCommand(interaction);
 					}
 					break;
 				}
@@ -220,24 +221,27 @@ export default class SlashCommandsModule extends BotModule {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.GREEN)
 						.setDescription('No topic set for this channel.');
+
 					if ('topic' in interaction.channel) embed.setDescription(interaction.channel.topic);
+
 					await interaction.reply({ embeds: [embed] });
+					break;
 				}
 
 				case 'dump': {
+					const loadedLOMMUSModules = LOMMUS.registeredModules
+						.map((moduleName, i) => `${i + 1}. ${moduleName}`)
+						.join('\n');
+
 					const embed = new EmbedBuilder()
 						.setDescription(
-							`**Configuration**
-							\`\`\`json
-							${JSON.stringify(config)}
-							\`\`\`
-							\n\n
-							**Loaded modules**\n
-							${LOMMUS.registeredModules.map((moduleName, i) => {
-								`${i + 1}. ${moduleName}\n`;
-							})}`
+							`\`config.json\`
+							\`\`\`json\n${JSON.stringify(config, null, 2)}\`\`\`
+							**Loaded modules**
+							${loadedLOMMUSModules}`
 						)
-						.setAuthor({ name: `Time: ${new Date().toISOString()} | Mem usage (resident set size): ${process.memoryUsage().rss}` });
+						.setAuthor({ name: `${new Date().toISOString()}` })
+						.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
 
 					await interaction.reply({ embeds: [embed] });
 					break;
