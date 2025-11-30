@@ -2,12 +2,13 @@ import { EmbedBuilder, Events } from 'discord.js';
 import { BotModule } from './util/module.mjs';
 
 export default class AnnoyanceModule extends BotModule {
+	lomsusEmojiId = '1194456812955652117'
 
 	/**
 	 * Creates an instance of AnnoyanceModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client 
+	 * @param {import('discord.js').Client} client
 	 */
 	constructor (client) {
 		super(
@@ -38,7 +39,7 @@ export default class AnnoyanceModule extends BotModule {
 				return message.reply({ embeds: [embed] });
 			}
 
-			if (message.content.includes('amogus')) return message.react('923308755460952074');
+			if (message.content.includes('amogus')) return message.react(this.lomsusEmojiId);
 
 			if (message.content === 'ඞ') {
 				const rand = ['An Impostor', 'not The Impostor', 'ejected'];
