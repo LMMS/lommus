@@ -1,6 +1,7 @@
+import { readFile } from 'node:fs/promises';
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
-import { ChatInputCommandInteraction, EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { ChatInputCommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, time } from 'discord.js';
 import { LOMMUS } from '../lommus.js';
 
 export default class SlashCommandsModule extends BotModule {
@@ -28,10 +29,14 @@ export default class SlashCommandsModule extends BotModule {
 	 * @returns {boolean}
 	 */
 	checkPerms(interaction, bits, id) {
-		return (
-			interaction.memberPermissions?.has(bits)
-			|| (interaction.user.id === id)
-		);
+		if (id) {
+			return (
+				(interaction.memberPermissions?.has(bits) ?? false)
+				|| (interaction.user.id === id)
+			);
+		} else {
+			return interaction.memberPermissions?.has(bits) ?? false;
+		}
 	}
 
 	/**
@@ -127,6 +132,96 @@ export default class SlashCommandsModule extends BotModule {
 						this.rejectUnprivilegedCommand(interaction);
 					}
 					break;
+				}
+
+				case 'whois': {
+					// Get target user
+					const interactionOption = interaction.options.getUser('user');
+					if (!interactionOption) return;
+					const targetUser = interaction.guild.members.cache.get(interactionOption.id);
+
+					// Make sure target is from server
+					if (!targetUser) {
+						const embed = new EmbedBuilder()
+							.setColor(this.colors.RED)
+							.setDescription('Specified user was not found on this server.');
+						return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+					}
+
+					// Build embed
+					const embed = new EmbedBuilder()
+						.setAuthor({
+							name: targetUser.user.tag,
+							iconURL: targetUser.user.displayAvatarURL(),
+						})
+						.setImage(targetUser.displayAvatarURL({ size: 2048 }))
+						.setColor(targetUser.displayHexColor)
+						.addFields(
+							{ name: 'Most Recent Join', value: (targetUser.joinedAt) ? time(targetUser.joinedAt) : 'Unknown', inline: true },
+							{ name: 'Account Registered', value: time(targetUser.user.createdAt), inline: true },
+						);
+
+					// Find, sort and display roles of target
+					if (targetUser.roles.cache.size > 1) embed.addFields({
+						name: 'Server Roles',
+						value: targetUser.roles.cache
+							.sort((a, b) => b.position - a.position)
+							.map(r => `${r}`)
+							.filter(f => f != '@everyone').join(', ')
+					},
+					);
+
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+					break;
+				}
+
+				case 'server': {
+					const bans = await interaction.guild.bans.fetch();
+
+					const embed = new EmbedBuilder()
+						.setAuthor({
+							name: interaction.guild.name,
+							iconURL: interaction.guild.iconURL() ?? "",
+						})
+						// .setColor(interaction.guild.me.displayHexColor)
+						.setThumbnail(interaction.guild.iconURL({ size: 128 }))
+						.setDescription(`${interaction.guild.description}\n${hideLinkEmbed('https://discord.gg/LMMS')}`)
+						.addFields(
+							{ name: 'Date Created', value: time(interaction.guild.createdAt), inline: false },
+							{ name: 'Total Members', value: `${interaction.guild.memberCount}`, inline: true },
+							{
+								name: 'Online Members', value: `${interaction.guild.members.cache.filter(member =>
+									member.presence?.status !== 'offline').size}`, inline: true
+							},
+							{ name: 'Maximum Members', value: `${interaction.guild.maximumMembers}`, inline: true },
+							{ name: 'Boost Count', value: `${interaction.guild.premiumSubscriptionCount}`, inline: true },
+							{ name: 'Boost Tier', value: `${interaction.guild.premiumTier}`, inline: true },
+							{ name: 'Bans', value: `${bans.size}`, inline: true },
+						);
+
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+					break;
+				}
+
+				case 'bot': {
+					const changelog = await readFile('./changelog.txt', { 'encoding': 'utf-8' });
+					const readme = await readFile('./README.md', { 'encoding': 'utf-8' });
+
+					const embed = new EmbedBuilder()
+						// .setColor(interaction.guild.me.displayHexColor)
+						.setDescription(`**README.md:**\n\`\`\`md\n${readme.substring(0, 1000)}\n\`\`\`\n`
+							+ changelog.substring(0, 1000));
+
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+					break;
+				}
+
+				case 'topic': {
+					const embed = new EmbedBuilder()
+						.setColor(this.colors.GREEN)
+						.setDescription('No topic set for this channel.');
+					if ('topic' in interaction.channel) embed.setDescription(interaction.channel.topic);
+					await interaction.reply({ embeds: [embed] });
 				}
 			}
 		});

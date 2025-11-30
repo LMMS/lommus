@@ -15,7 +15,8 @@ export default class UserCommandsModule extends BotModule {
 			client,
 			'User Commands',
 			'permissionless commands for users',
-			['interactionCreate']
+			['interactionCreate'],
+			{ disabled: true }
 		);
 
 	}
