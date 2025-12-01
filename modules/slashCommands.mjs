@@ -118,6 +118,13 @@ export default class SlashCommandsModule extends BotModule {
 				}
 
 				case 'reload': {
+					const embed = new EmbedBuilder()
+						.setColor(this.colors.RED)
+						.setTitle("MODULE RELOADING IS BROKEN")
+						.setDescription('*Node currently does not refresh a module\'s dependency tree* even when it\'s imported again with cache busting. There is also a *memory leak with re-importing modules*.\n\nRestart the bot instead');
+					await interaction.reply({ embeds: [embed] });
+					break;
+					/*
 					if (this.checkPerms(interaction, PermissionFlagsBits.BanMembers, config.ownerId)) {
 						console.log("Reloading modules...");
 
@@ -133,6 +140,7 @@ export default class SlashCommandsModule extends BotModule {
 						this.rejectUnprivilegedCommand(interaction);
 					}
 					break;
+					*/
 				}
 
 				case 'whois': {
