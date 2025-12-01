@@ -186,7 +186,7 @@ export default class SlashCommandsModule extends BotModule {
 						})
 						// .setColor(interaction.guild.me.displayHexColor)
 						.setThumbnail(interaction.guild.iconURL({ size: 128 }))
-						.setDescription(`${interaction.guild.description}\n${hideLinkEmbed('https://discord.gg/LMMS')}`)
+						.setDescription(`${(interaction.guild.description) ? interaction.guild.description.concat('\n') : ""}${hideLinkEmbed('https://discord.gg/LMMS')}`)
 						.addFields(
 							{ name: 'Date Created', value: time(interaction.guild.createdAt), inline: false },
 							{ name: 'Total Members', value: `${interaction.guild.memberCount}`, inline: true },
