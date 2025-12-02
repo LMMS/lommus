@@ -39,9 +39,9 @@ class LoMMuS {
 	/**
 	 * Array of module names that have been loaded and registered
 	 *
-	 * @type {string[]}
+	 * @type {Set<import('./modules/util/module.mjs').BotModule>}
 	 */
-	registeredModules = [];
+	registeredModules = new Set();
 
 	/**
 	 * Initializes LoMMuS and logs in
@@ -59,8 +59,6 @@ class LoMMuS {
 	async loadESModules() {
 		console.log("Initializing ES module loading...");
 
-		this.registeredModules = [];
-
 		const moduleFiles = fs
 			.readdirSync('./modules')
 			.filter(file => file.endsWith('.mjs'));
@@ -70,7 +68,7 @@ class LoMMuS {
 			const path = `./modules/${file}?t=${Date.now()}`;
 			let mod;
 
-			// try to import this first
+			// try to import the module first
 			try {
 				mod = await import(path);
 			} catch (err) {
@@ -98,8 +96,8 @@ class LoMMuS {
 			}
 
 			try {
+				this.#checkLoadedModules(instance);
 				instance.init();
-				this.#checkLoadedModules(instance.name);
 				console.log(`'${instance.name}' module loaded`);
 			} catch (err) {
 				console.error(`Error initializing '${file}':`, err);
@@ -110,10 +108,12 @@ class LoMMuS {
 	/**
 	 * Checks all of the modules that have been loaded
 	 *
-	 * @param {string} moduleName The name of the module
+	 * @param {import('./modules/util/module.mjs').BotModule} moduleName The name of the module
 	 */
 	#checkLoadedModules(moduleName) {
-		if (!this.registeredModules.includes(moduleName)) this.registeredModules.push((moduleName));
+		if (this.registeredModules.has(moduleName)) throw new Error(`Module ${moduleName.name} was attempted to load more than once!`);
+
+		this.registeredModules.add(moduleName);
 	}
 
 	/**
