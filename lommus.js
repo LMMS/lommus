@@ -140,10 +140,8 @@ class LoMMuS {
 			this.client.user.setActivity(`${guild.memberCount} LeMMingS`, { type: ActivityType.Watching });
 
 			// This needs to be called here so that the guild data cache isn't stale
-			this.loadESModules();
+			await this.loadESModules();
 		});
-
-		console.log("Initial bot setup done!");
 	}
 }
 
