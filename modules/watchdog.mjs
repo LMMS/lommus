@@ -14,7 +14,7 @@ export default class WatchdogModule extends BotModule {
 	 *
 	 * @type {string}
 	 */
-	resourcesChannelId = "836022138913816586"
+	resourcesChannelId = "836022138913816586";
 
 	/**
 	 * Creates an instance of WatchdogModule.
@@ -75,8 +75,10 @@ export default class WatchdogModule extends BotModule {
 			if (message.channelId === this.resourcesChannelId) {
 				// is it a staff? does it have no url and attachments?
 				if (
-					message.member
-					&& message.member.permissions.has(PermissionFlagsBits.BanMembers)
+					(
+						message.member
+						&& message.member.permissions.has(PermissionFlagsBits.BanMembers)
+					)
 					|| !this.urlReg.test(message.content)
 					&& message.attachments.size > 0
 				) {
