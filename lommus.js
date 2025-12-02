@@ -59,7 +59,7 @@ class LoMMuS {
 	async loadESModules() {
 		console.log("Initializing ES module loading...");
 
-		this.registeredModules = []
+		this.registeredModules = [];
 
 		const moduleFiles = fs
 			.readdirSync('./modules')
@@ -147,8 +147,15 @@ class LoMMuS {
 	}
 }
 
-// generic error handling
+// async error handling
 process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error));
+
+// process crash handling
+process.on('uncaughtException', (listener) => {
+	console.error('Unhandled fatal exception:\n', listener);
+	console.error('This is irrecoverable. The process will exit with code \'1\'. If any, the daemon will restart LoMMuS');
+	process.exit(1);
+});
 
 // final token check
 /** @type {LoMMuS} */
