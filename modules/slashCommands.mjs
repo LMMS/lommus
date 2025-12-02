@@ -242,17 +242,23 @@ export default class SlashCommandsModule extends BotModule {
 
 				case 'dump': {
 					if (this.checkPerms(interaction, PermissionFlagsBits.KickMembers, config.ownerId)) {
-						const loadedLOMMUSModules = LOMMUS.registeredModules
-							.map((moduleName, i) => `${i + 1}. ${moduleName}`)
+						const loadedLOMMUSModules = Array.from(LOMMUS.registeredModules)
+							.map((mod, i) => `${i + 1}. \`${mod.name}\`: *${mod.description}*`)
+							.join('\n');
+
+						const LOMMUSIntents = LOMMUS.client.options.intents
+							.toArray()
+							.map((intent, i) => `${i + 1}. \`${intent}\``)
 							.join('\n');
 
 						const embed = new EmbedBuilder()
-							.setDescription(
-								`\`config.json\`
-							\`\`\`json\n${JSON.stringify(config, null, 2)}\`\`\`
-							**Loaded modules**
-							${loadedLOMMUSModules}`
+							.setDescription(`\`config.json\`
+															\`\`\`json\n${JSON.stringify(config, null, 2)}\`\`\``
 							)
+							.addFields([
+								{ name: 'Loaded modules', value: loadedLOMMUSModules, inline: true },
+								{ name: 'Intents', value: LOMMUSIntents, inline: true },
+							])
 							.setAuthor({ name: `${new Date().toISOString()}` })
 							.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
 
@@ -260,6 +266,20 @@ export default class SlashCommandsModule extends BotModule {
 					} else {
 						await this.rejectUnprivilegedCommand(interaction);
 					}
+					break;
+				}
+
+				case 'ping': {
+					const pingReceivedTime = Date.now();
+
+					if (interaction.isRepliable()) try {
+						interaction.reply('Measuring...').then(async (msg) => {
+							await msg.edit(`:ping_pong: Pong \`${pingReceivedTime - msg.createdTimestamp}\`ms\nAPI latency: \`${this.client.ws.ping}\`ms\nTotal latency: \`${this.client.ws.ping + (pingReceivedTime - msg.createdTimestamp)}\`ms`);
+						});
+					} catch (error) {
+						await interaction.reply('Failed to get ping data');
+					}
+
 					break;
 				}
 			}

@@ -39,6 +39,10 @@ const commands = [
 		.setDescription('generate the LMMS server info embed')
 		.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
 
+	new SlashCommandBuilder()
+		.setName('ping')
+		.setDescription('Get latency measurements'),
+
 	// rule
 	new SlashCommandBuilder()
 		.setName('rule')
