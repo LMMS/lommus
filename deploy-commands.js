@@ -30,8 +30,7 @@ const commands = [
 		.setDescription('say something as the bot')
 		.addStringOption(option => option.setName('message')
 			.setDescription('what LoMMuS should say')
-			.setRequired(true))
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+			.setRequired(true)),
 
 	// info embed
 	new SlashCommandBuilder()
@@ -92,10 +91,10 @@ const commands = [
 			option.setName('function')
 				.setDescription('functionality to toggle')
 				.setRequired(true)
-				.addChoices(
+				// .addChoices(
 				// { name: 'color', value: 'toggle_color' },
-			))
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+				// )
+		),
 
 	// whois
 	new SlashCommandBuilder()
