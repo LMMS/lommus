@@ -11,5 +11,6 @@ export const config = {
 	clientId: jsonConfig.clientId,
 	guildId: jsonConfig.guildId,
 	github: jsonConfig.github,
-	greeted: ('greeted' in jsonConfig) ? jsonConfig.greeted : false
+	greeted: ('greeted' in jsonConfig) ? jsonConfig.greeted : false,
+	lomboardReactionLimit: jsonConfig.lomboardReactionLimit
 };

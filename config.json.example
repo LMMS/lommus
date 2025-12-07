@@ -3,16 +3,17 @@
   "ownerId": "<your discord user ID here>",
   "clientId": "<the bot's applicaton ID here>",
   "guildId": "<the server's ID here>",
+  "lomboardReactionLimit": 5,
   "github": {
-		"allowedOrgs": [
-			"LMMS",
-			"calf-studio-gear",
-			"Audacity",
-			"FluidSynth",
-			"zynaddsubfx"
-		],
-		"defaultRepo": "lmms"
-	},
+    "allowedOrgs": [
+      "LMMS",
+      "calf-studio-gear",
+      "Audacity",
+      "FluidSynth",
+      "zynaddsubfx"
+    ],
+    "defaultRepo": "lmms"
+  },
   "green": "#2c974f",
   "blue": "#2d80c0",
   "yellow": "#ecd10f",

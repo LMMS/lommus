@@ -1,5 +1,6 @@
 import { EmbedBuilder, Events } from 'discord.js';
 import { BotModule } from './util/module.mjs';
+import { config } from './util/config.mjs';
 
 // lmms server: <:bouba:1194451869829967952>
 
@@ -12,11 +13,18 @@ export default class LomboardModule extends BotModule {
 	emojiId = '1194451869829967952';
 
 	/**
+	 * The #lomboard channel
+	 *
+	 * @type {string}
+	 */
+	lomboardChannel = '1074109666730197083';
+
+	/**
 	 * Number of reactions needed to get to the Lomboard
 	 *
 	 * @type {number}
 	 */
-	reactionsNeeded = 10;
+	reactionsNeeded = config.lomboardReactionLimit;
 
 	/**
 	 * Creates an instance of LomboardModule.
@@ -35,16 +43,17 @@ export default class LomboardModule extends BotModule {
 
 	init() {
 		this.client.on(Events.MessageReactionAdd, async (reaction, user) => {
+			const lomboard = await this.client.guilds.cache.get(config.guildId)?.channels.fetch(this.lomboardChannel);
+			if (!lomboard) return console.error("Lomboard not found!");
+
+			if (!lomboard.isTextBased()) return console.error("Lomboard isn't a text based channel! (what)");
+
 			if (reaction.partial) await reaction.fetch();
 
 			const message = reaction.message;
-			if (!message.guild) return;
-
 			const emojiIdCache = message.reactions.cache.get(this.emojiId);
-			if (!emojiIdCache) return console.error("Failed to get emoji ID from cache");
 
-			const lomboard = message.guild.channels.cache.find(channel => channel.name === 'lomboard');
-			if (!lomboard || !('messages' in lomboard)) return;
+			if (!message.guild || !emojiIdCache) return;
 
 			if (
 				reaction.emoji.id !== this.emojiId
@@ -74,11 +83,11 @@ export default class LomboardModule extends BotModule {
 				const foundStar = stars.embeds[0];
 				if (!foundStar) return;
 				const embed = EmbedBuilder.from(foundStar)
-					//.setColor(foundStar.color)
-					//.setTimestamp(foundStar.timestamp)
-					//	.setDescription(foundStar.description)
-					.setTitle(`${this.client.emojis.cache.get(this.emojiId)} ${emojiIdCache.count}  •  #${message.channel.name}${messageAttach}`);
-				//	.setFooter(foundStar.footer);
+					.setColor(foundStar.color)
+					.setTimestamp(Number(foundStar.timestamp))
+					.setDescription(foundStar.description)
+					.setTitle(`${this.client.emojis.cache.get(this.emojiId)} ${emojiIdCache.count}  •  #${message.channel.name}${messageAttach}`)
+					.setFooter(foundStar.footer);
 
 				await starMessage.edit({ embeds: [embed], files: [...message.attachments.values()] });
 			} else {
