@@ -303,6 +303,23 @@ export default class SlashCommandsModule extends BotModule {
 					await interaction.reply('Failed to get ping data');
 				}
 			}
+		}],
+		["nightly", {
+			perms: PermissionFlagsBits.SendMessages,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+				const embed = new EmbedBuilder()
+					.setColor(this.colors.GREEN)
+					.setTitle('Nightly builds')
+					.setURL('https://lmms.io/download')
+					.setDescription('Nightly versions are now available directly on the main LMMS download page! \n[Go to download page.](https://lmms.io/download) \n\nTreat nightly builds with utmost care. Back up any projects before loading and saving them in new versions.');
+
+				if (interaction.channel?.isSendable()) await interaction.channel.send({ embeds: [embed] });
+
+				await interaction.deleteReply();
+			}
 		}]
 	]);
 

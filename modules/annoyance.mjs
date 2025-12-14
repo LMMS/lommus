@@ -22,13 +22,15 @@ export default class AnnoyanceModule extends BotModule {
 	init() {
 		// meme messages
 		this.client.on(Events.MessageCreate, async (message) => {
-			if (message.author.bot) return;
-			if ('name' in message.channel && message.channel.name === 'resources') return;
+			if (
+				message.author.bot
+				|| ('name' in message.channel && message.channel.name === 'resources')
+			) return;
 
-			if (message.content.includes('!nightly')) {
+			if (message.content.startsWith('!nightly')) {
 				const embed = new EmbedBuilder()
-					.setColor(this.colors.GREEN)
-					.setDescription('Nightly versions are now available directly on the main LMMS download page! \n[Go to download page.](https://lmms.io/download) \n\nTreat nightly builds with utmost care. Back up any projects before loading and saving them in new versions.');
+					.setColor(this.colors.RED)
+					.setDescription('This chat command is deprecated, use `/nightly`');
 				return message.reply({ embeds: [embed] });
 			}
 
@@ -41,7 +43,7 @@ export default class AnnoyanceModule extends BotModule {
 
 			if (message.content.includes('amogus')) return message.react(this.lomsusEmojiId);
 
-			if (message.content === 'ඞ') {
+			if (message.content.includes('ඞ') || message.content.includes('ඩ')) {
 				const rand = ['An Impostor', 'not The Impostor', 'ejected'];
 				const chance = rand[Math.floor(Math.random() * rand.length)];
 
@@ -50,6 +52,8 @@ export default class AnnoyanceModule extends BotModule {
 					+ `${message.author.username} was ${chance}   。  .\n`
 					+ '　 　　。　　　　　　ﾟ　　　.　　　　　.\n,　　　　.　 .　　       .');
 			}
+
+			return;
 		});
 	}
 }
