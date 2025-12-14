@@ -14,8 +14,7 @@ export default class AnnoyanceModule extends BotModule {
 		super(
 			client,
 			'Annoyance',
-			'sus module sus module',
-			['messageCreate']
+			'sus module sus module'
 		);
 	}
 

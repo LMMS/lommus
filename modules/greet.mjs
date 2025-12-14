@@ -16,7 +16,6 @@ export default class GreetModule extends BotModule {
 			client,
 			'Greeting',
 			'should only fire once, when `greeted` is unset/false in `config.json`',
-			[],
 			{ disabled: true }
 		);
 	}

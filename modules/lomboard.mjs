@@ -36,8 +36,7 @@ export default class LomboardModule extends BotModule {
 		super(
 			client,
 			'Lomboard',
-			'Starboard, Lommus Edition',
-			['messageReactionAdd', 'messageReactionRemove']
+			'Starboard, Lommus Edition'
 		);
 	}
 

@@ -25,8 +25,7 @@ export default class WatchdogModule extends BotModule {
 		super(
 			client,
 			'Watchdog',
-			"oh no you didn't.",
-			['messageCreate']
+			"oh no you didn't."
 		);
 	}
 

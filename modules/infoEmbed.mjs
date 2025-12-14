@@ -20,8 +20,7 @@ export default class InfoEmbedModule extends BotModule {
 		super(
 			client,
 			'Info Embed',
-			'Handles #info embed, embed buttons, and breakout commands.',
-			['interactionCreate, messageCreate']
+			'Handles #info embed, embed buttons, and breakout commands.'
 		);
 	}
 

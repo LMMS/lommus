@@ -25,8 +25,7 @@ export default class SlashCommandsModule extends BotModule {
 		super(
 			client,
 			"Slash Commands",
-			"Event handlers for slash commands",
-			["interactionCreate"]
+			"Event handlers for slash commands"
 		);
 	}
 	/**
