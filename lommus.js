@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config({ quiet: true });
 import { ActivityType, Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { config } from './modules/util/config.mjs';
+import { THROW_REASONS } from './modules/util/globals.mjs';
 
 console.log("LoMMuS is initializing...");
 
@@ -101,6 +102,9 @@ class LoMMuS {
 				console.log(`'${instance.name}' module loaded`);
 			} catch (err) {
 				console.error(`Error initializing '${file}':`, err);
+				if (err instanceof Error) {
+					if (err.cause === THROW_REASONS.ABSTRACT_METHOD) return console.error(`Module ${file}'s 'init()' method was not implemented`);
+				}
 			}
 		}
 	}
@@ -149,8 +153,8 @@ class LoMMuS {
 process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error));
 
 // process crash handling
-process.on('uncaughtException', (listener) => {
-	console.error('Unhandled fatal exception:\n', listener);
+process.on('uncaughtException', (error) => {
+	console.error('Unhandled fatal exception:\n', error);
 	console.error('This is irrecoverable. The process will exit with code \'1\'. If any, the daemon will restart LoMMuS');
 	process.exit(1);
 });

@@ -1,4 +1,5 @@
 import { colors } from './colors.mjs';
+import { THROW_REASONS } from "./globals.mjs";
 
 export class BotModule {
 
@@ -46,7 +47,7 @@ export class BotModule {
 	 * @param {{ disabled?: boolean } | undefined} config Configuration options
 	 */
 	constructor (client, name, description, config = { disabled: false }) {
-		if (this.constructor == BotModule) throw new Error("Abstract classes can't be instantiated");
+		if (this.constructor == BotModule) throw new Error("Abstract classes can't be instantiated", { cause: THROW_REASONS.ABSTRACT_CLASS });
 		this.client = client;
 
 		this.name = name;
@@ -55,11 +56,11 @@ export class BotModule {
 	}
 
 	/**
-	 * Abstract class for initializing the module.
+	 * Abstract method for initializing the module. This module must be concretely implemented by subclasses else an error will be thrown
 	 *
-	 * Analogous to the `.execute()` method
+	 * @abstract
 	 */
 	init() {
-		throw new Error("Method `init()` must be implemented by subclasses");
+		throw new Error("Method `init()` must be implemented by subclasses", { cause: THROW_REASONS.ABSTRACT_METHOD });
 	}
 }
