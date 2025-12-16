@@ -83,6 +83,10 @@ const commands = [
 		.setName('channels')
 		.setDescription('get a list of server channels'),
 
+	new SlashCommandBuilder()
+		.setName('nightly')
+		.setDescription('Give information about LMMS\'s nightly builds'),
+
 	// toggle
 	new SlashCommandBuilder()
 		.setName('toggle')
