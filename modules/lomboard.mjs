@@ -2,22 +2,35 @@ import { EmbedBuilder, Events } from 'discord.js';
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
 
-// lmms server: <:bouba:1194451869829967952>
-
 export default class LomboardModule extends BotModule {
 	/**
 	 * The emoji ID used for starring messages
 	 *
 	 * @type {string}
 	 */
-	emojiId = '1194451869829967952';
+	starEmojiId = '1194451869829967952';
+
 
 	/**
-	 * The #lomboard channel
+	 * The star emoji
+	 *
+	 * @type {import('discord.js').GuildEmoji}
+	 */
+	starEmoji;
+
+	/**
+	 * The `#lomboard` channel ID
 	 *
 	 * @type {string}
 	 */
-	lomboardChannel = '1074109666730197083';
+	lomboardChannelId = '1074109666730197083';
+
+	/**
+	 * The `#lomboard` channel
+	 *
+	 * @type {import('discord.js').TextChannel}
+	 */
+	lomboardChannel;
 
 	/**
 	 * Number of reactions needed to get to the Lomboard
@@ -38,68 +51,92 @@ export default class LomboardModule extends BotModule {
 			'Lomboard',
 			'Starboard, Lommus Edition'
 		);
+		let cachedStarEmoji = client.emojis.cache.get(this.starEmojiId);
+		if (cachedStarEmoji) {
+			this.starEmoji = cachedStarEmoji
+		} else {
+			throw new Error("Can't find star emoji!");
+		};
+
+		let cachedLomboardChannel = client.channels.cache.get(this.lomboardChannelId);
+		if (cachedLomboardChannel) {
+			// @ts-ignore
+			this.lomboardChannel = cachedLomboardChannel
+		} else {
+			throw new Error("Can't find Lomboard channel!");
+		}
 	}
 
 	init() {
-		this.client.on(Events.MessageReactionAdd, async (reaction, user) => {
-			const lomboard = await this.client.guilds.cache.get(config.guildId)?.channels.fetch(this.lomboardChannel);
-			if (!lomboard) return console.error("Lomboard not found!");
-
-			if (!lomboard.isTextBased()) return console.error("Lomboard isn't a text based channel! (what)");
-
+		this.client.on(Events.MessageReactionAdd, async (reaction, user, _details) => {
 			if (reaction.partial) await reaction.fetch();
 
+			/** The message that received a reaction */
 			const message = reaction.message;
-			const emojiIdCache = message.reactions.cache.get(this.emojiId);
+			if (message.partial) await message.fetch();
+			if (!message.guild || !message.channel.isTextBased()) return;
 
-			if (!message.guild || !emojiIdCache) return;
+			/** The star reactions of the message (if any) */
+			const messageStarReactions = message.reactions.cache.get(this.starEmojiId);
+			if (!messageStarReactions) return;
 
-			if (
-				reaction.emoji.id !== this.emojiId
-				|| !('name' in message.channel && message.channel.name === 'news')
-			) return;
+			// Don't scan stars in these channels
+			if ([
+				'242405592998608896',
+				'434753275485618176',
+				'242402504262811648',
+				'486590751032082462',
+				'283757917230858240'
+			].includes(message.channelId)) return;
 
-			if (message.author && user.id === message.author.id) {
-				if (emojiIdCache) emojiIdCache.remove()
-					.catch(error => console.error('Failed to remove reaction:', error));
-			}
+			// Remove selfishness
+			if (message.author && message.author.id === user.id)
+				messageStarReactions
+					.remove()
+					.catch(err => {
+					console.error('Failed to remove reaction:', err)
+				})
 
-			if (emojiIdCache && emojiIdCache.count < this.reactionsNeeded) return;
+			// check reaction count
+			if (messageStarReactions.count < this.reactionsNeeded) return;
 
-			const fetch = await lomboard.messages.fetch({ limit: 100 });
-			const stars = fetch.find(msg => {
-				if (msg.embeds[0]?.footer) msg.embeds[0].footer.text.startsWith(message.id);
+			/** All messages in Lomboard */
+			const lomboardMessages = await this.lomboardChannel.messages.fetch({ limit: 100 });
+
+			/** The existing boarded message, if exists */
+			const existingBoardedMsg = lomboardMessages.find(msg => {
+				if (msg.embeds[0] && msg.embeds[0].footer) msg.embeds[0].footer.text.startsWith(message.id)
 			});
 
-			let messageAttach = '';
+			let messageAttachment = '';
 			let messageContent = '';
 
-			if (message.attachments.size > 0) messageAttach = '  •  File(s) Above';
+			if (message.attachments.size > 0) messageAttachment = ' •  File(s) Above';
 			if (message.content && message.content.length > 0) messageContent = `\n${message.cleanContent}`;
 
-			if (stars) {
-				const starMessage = await lomboard.messages.fetch(stars.id);
-				const foundStar = stars.embeds[0];
-				if (!foundStar) return;
-				const embed = EmbedBuilder.from(foundStar)
-					.setColor(foundStar.color)
-					.setTimestamp(Number(foundStar.timestamp))
-					.setDescription(foundStar.description)
-					.setTitle(`${this.client.emojis.cache.get(this.emojiId)} ${emojiIdCache.count}  •  #${message.channel.name}${messageAttach}`)
-					.setFooter(foundStar.footer);
+			// is there an existing board message?
+			if (existingBoardedMsg && existingBoardedMsg.embeds[0]) {
+				const boardedMsgEmbed = existingBoardedMsg.embeds[0];
 
-				await starMessage.edit({ embeds: [embed], files: [...message.attachments.values()] });
+				const embed = EmbedBuilder.from(boardedMsgEmbed)
+					.setColor(boardedMsgEmbed.color)
+					.setTimestamp(Number(boardedMsgEmbed.timestamp))
+					.setDescription(boardedMsgEmbed.description)
+					.setTitle(`${this.starEmoji} ${messageStarReactions.count} • #${message.channel.name}${messageAttachment}`)
+					.setFooter(boardedMsgEmbed.footer);
+
+				return existingBoardedMsg.edit({ embeds: [embed], files: [...message.attachments.values()] });
 			} else {
 				const embed = new EmbedBuilder()
 					.setColor(this.colors.GREEN)
 					.setTimestamp(message.createdTimestamp)
 					.setDescription(`${message.author}${messageContent}
 														\n[jump to message](${message.url})`)
-					.setTitle(`${this.client.emojis.cache.get(this.emojiId)} ${this.reactionsNeeded}  •  #${message.channel.name}${messageAttach}`)
-					.setFooter({ text: `${message.id}` });
+					.setTitle(`${this.starEmoji} ${this.reactionsNeeded}  •  #${message.channel.name}${messageAttachment}`)
+					.setFooter({ text: message.id });
 
-				await lomboard.send({ embeds: [embed], files: [...message.attachments.values()] });
+					return this.lomboardChannel.send({ embeds: [embed], files: [...message.attachments.values()] })
 			}
-		});
+		})
 	}
 }
