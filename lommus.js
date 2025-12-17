@@ -92,7 +92,7 @@ class LoMMuS {
 					continue;
 				};
 			} catch (err) {
-				console.warn(`Ignoring '${file}', could not instantiate default export`);
+				console.warn(`Ignoring '${file}'. Could not instantiate default export due to:`, err);
 				continue;
 			}
 
@@ -101,7 +101,7 @@ class LoMMuS {
 				instance.init();
 				console.log(`'${instance.name}' module loaded`);
 			} catch (err) {
-				console.error(`Error initializing '${file}':`, err);
+				console.error(`Error while initializing '${file}':`, err);
 				if (err instanceof Error) {
 					if (err.cause === THROW_REASONS.ABSTRACT_METHOD) return console.error(`Module ${file}'s 'init()' method was not implemented`);
 				}
