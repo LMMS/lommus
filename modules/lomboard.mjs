@@ -76,10 +76,6 @@ export default class LomboardModule extends BotModule {
 			if (message.partial) await message.fetch();
 			if (!message.guild || !message.channel.isTextBased()) return;
 
-			/** The star reactions of the message (if any) */
-			const messageStarReactions = message.reactions.cache.get(this.starEmojiId);
-			if (!messageStarReactions) return;
-
 			// Don't scan stars in these channels
 			if ([
 				'242405592998608896',
@@ -91,11 +87,15 @@ export default class LomboardModule extends BotModule {
 
 			// Remove selfishness
 			if (message.author && message.author.id === user.id)
-				reaction
-					.remove()
+				reaction.users
+					.remove(user.id)
 					.catch(err => {
 					console.error('Failed to remove reaction:', err)
 				})
+
+			/** The star reactions of the message (if any) */
+			const messageStarReactions = message.reactions.cache.get(this.starEmojiId);
+			if (!messageStarReactions) return;
 
 			// check reaction count
 			if (messageStarReactions.count < this.reactionsNeeded) return;
@@ -105,7 +105,7 @@ export default class LomboardModule extends BotModule {
 
 			/** The existing boarded message, if exists */
 			const existingBoardedMsg = lomboardMessages.find(msg => {
-				if (msg.embeds[0] && msg.embeds[0].footer) msg.embeds[0].footer.text.startsWith(message.id)
+				return Boolean(msg.embeds[0]?.footer?.text?.startsWith(message.id));
 			});
 
 			let messageAttachment = '';
@@ -120,22 +120,23 @@ export default class LomboardModule extends BotModule {
 
 				const embed = EmbedBuilder.from(boardedMsgEmbed)
 					.setColor(boardedMsgEmbed.color)
-					.setTimestamp(Number(boardedMsgEmbed.timestamp))
 					.setDescription(boardedMsgEmbed.description)
 					.setTitle(`${this.starEmoji} ${messageStarReactions.count} • #${message.channel.name}${messageAttachment}`)
 					.setFooter(boardedMsgEmbed.footer);
 
-				return existingBoardedMsg.edit({ embeds: [embed], files: [...message.attachments.values()] });
+				if (boardedMsgEmbed.timestamp) embed.setTimestamp(new Date(boardedMsgEmbed.timestamp));
+
+				return await existingBoardedMsg.edit({ embeds: [embed], files: [...message.attachments.values()] });
 			} else {
 				const embed = new EmbedBuilder()
 					.setColor(this.colors.GREEN)
 					.setTimestamp(message.createdTimestamp)
 					.setDescription(`${message.author}${messageContent}
 														\n[jump to message](${message.url})`)
-					.setTitle(`${this.starEmoji} ${this.reactionsNeeded}  •  #${message.channel.name}${messageAttachment}`)
+					.setTitle(`${this.starEmoji} ${messageStarReactions.count}  •  #${message.channel.name}${messageAttachment}`)
 					.setFooter({ text: message.id });
 
-					return this.lomboardChannel.send({ embeds: [embed], files: [...message.attachments.values()] })
+					return await this.lomboardChannel.send({ embeds: [embed], files: [...message.attachments.values()] })
 			}
 		})
 	}
