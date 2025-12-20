@@ -15,6 +15,21 @@ import { formatBytes } from 'bytes-formatter';
  * }>} CommandStruct
  */
 export default class SlashCommandsModule extends BotModule {
+
+	/**
+	 * The #evidence channel ID
+	 *
+	 * @type {string}
+	 */
+	evidenceChannelId = "486590751032082462";
+
+	/**
+	 * The #evidence channel
+	 *
+	 * @type {import('discord.js').TextChannel}
+	 */
+	evidenceChannel;
+
 	/**
 	 * Creates an instance of SlashCommandsModule.
 	 *
@@ -27,7 +42,12 @@ export default class SlashCommandsModule extends BotModule {
 			"Slash Commands",
 			"Event handlers for slash commands"
 		);
+
+		// @ts-expect-error
+		this.evidenceChannel = this.client.channels.cache.get(this.evidenceChannelId);
+		if (this.evidenceChannel?.partial) this.evidenceChannel.fetch();
 	}
+
 	/**
 	 * Checks whether the user has proper permissions, or is of the configured ID
 	 *
@@ -55,9 +75,9 @@ export default class SlashCommandsModule extends BotModule {
 	async rejectUnprivilegedCommand(interaction) {
 		const { id, globalName, username } = interaction.user;
 
-		await interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
 
-		console.warn(`Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
+		return await this.evidenceChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
 	}
 
 	/** @type {CommandStruct} */

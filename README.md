@@ -12,7 +12,7 @@
 
 Welcome to LMMS's LoMMuS repository. **LoMMuS** is our Discord bot formerly operated and developed by [StakeoutPunch](https://github.com/StakeoutPunch), it is now maintained by the larger LMMS developers.
 
-**Read the [wiki](//github.com/LMMS/lommus/wiki) for instructions on how to set up and deploy LoMMuS.**
+**Read the [wiki](https://github.com/LMMS/lommus/wiki) for instructions on how to set up and deploy LoMMuS.**
 
 Feel free to contribute and make PRs.
 
