@@ -91,7 +91,7 @@ export default class LomboardModule extends BotModule {
 
 			// Remove selfishness
 			if (message.author && message.author.id === user.id)
-				messageStarReactions
+				reaction
 					.remove()
 					.catch(err => {
 					console.error('Failed to remove reaction:', err)
