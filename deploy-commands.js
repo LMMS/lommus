@@ -10,6 +10,33 @@ const commands = [
 		.setName('dump')
 		.setDescription('Dumps info about the bot'),
 
+	new SlashCommandBuilder()
+		.setName('file')
+		.setDescription('Get a given file ')
+		.addStringOption((option) =>
+			option
+				.setName('path')
+				.setDescription('The path to the file')
+				.setRequired(true)
+				.setMaxLength(4095)
+		)
+		.addStringOption((option) =>
+			option
+				.setName('org')
+				.setDescription("The organization to fetch the file from. Defaults to 'LMMS'")
+				.setRequired(false)
+				.setMinLength(3)
+				.setMaxLength(39)
+		)
+		.addStringOption((option) =>
+			option
+				.setName('repo')
+				.setDescription("The repository to fetch the file from. Defaults to 'lmms'")
+				.setRequired(false)
+				.setMinLength(1)
+				.setMaxLength(100)
+		),
+
 	// restart
 	new SlashCommandBuilder()
 		.setName('restart')
@@ -95,9 +122,9 @@ const commands = [
 			option.setName('function')
 				.setDescription('functionality to toggle')
 				.setRequired(true)
-				// .addChoices(
-				// { name: 'color', value: 'toggle_color' },
-				// )
+			// .addChoices(
+			// { name: 'color', value: 'toggle_color' },
+			// )
 		),
 
 	// whois
