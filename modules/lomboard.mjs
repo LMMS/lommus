@@ -86,8 +86,11 @@ export default class LomboardModule extends BotModule {
 			].includes(message.channelId)) return;
 
 			// Remove selfishness
-			if (message.author && message.author.id === user.id)
-				reaction.users
+			if (
+				message.author
+				&& message.author.id === user.id
+				&& reaction.emoji.id === this.starEmoji.id
+			) reaction.users
 					.remove(user.id)
 					.catch(err => {
 					console.error('Failed to remove reaction:', err)
