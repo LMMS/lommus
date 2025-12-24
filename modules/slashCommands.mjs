@@ -4,6 +4,7 @@ import { config } from './util/config.mjs';
 import { ChatInputCommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, time } from 'discord.js';
 import { LOMMUS } from '../lommus.js';
 import { formatBytes } from 'bytes-formatter';
+import { getGitHubFile } from './util/githubApi.mjs';
 
 /**
  * @typedef {ReadonlyMap<string, {
@@ -338,6 +339,68 @@ export default class SlashCommandsModule extends BotModule {
 				if (interaction.channel?.isSendable()) await interaction.channel.send({ embeds: [embed] });
 
 				await interaction.deleteReply();
+			}
+		}],
+		["file", {
+			perms: PermissionFlagsBits.SendMessages,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				const options = {
+					orgPlusRepo: interaction.options.getString('org') ?? 'LMMS',
+					repo: interaction.options.getString('repo') ?? 'lmms',
+					filePath: interaction.options.getString('path', true)
+				}
+
+				const maybeOrgPlusRepo = options.orgPlusRepo.split('/');
+				if (maybeOrgPlusRepo.length > 1)
+					// @ts-expect-error
+					[options.orgPlusRepo, options.repo] = maybeOrgPlusRepo;
+				const fileOrNum = await getGitHubFile(options.orgPlusRepo, options.repo, options.filePath);
+
+
+				if (typeof fileOrNum === 'number') {
+					let httpRejectReason;
+					switch (fileOrNum) {
+						case 429:
+							httpRejectReason = "Hold your horses, the GitHub API is not pleased.";
+							break;
+
+						case 403:
+							httpRejectReason = "LoMMuS cannot access the given resource";
+							break;
+
+						case 404:
+							httpRejectReason = "Not found. Please re-check your options";
+							break;
+
+						default:
+							httpRejectReason = "There was an HTTP rejection/failure on your request"
+							break;
+					}
+
+					const embed = new EmbedBuilder()
+						.setTitle(`HTTP ${fileOrNum}`)
+						.setDescription(httpRejectReason)
+						.setColor(this.colors.RED);
+
+					return interaction.reply({embeds: [embed]})
+				}
+
+				const maybeFileExt = options.filePath.split('.');
+				const fileType = (maybeFileExt.length > 1) ? maybeFileExt.at(-1) : '';
+
+				const embed = new EmbedBuilder()
+					.setTitle(`(${options.orgPlusRepo}/${options.repo}) ${fileOrNum.name}`)
+					.setURL(fileOrNum.link)
+					.setDescription(`\`\`\`${fileType}\n${fileOrNum.contents}\n...\`\`\``)
+					.setColor(this.colors.GREEN)
+					.addFields([
+						{ name: 'Path', value: `\`${fileOrNum.path}\`` },
+						{ name: 'Size (b)', value: fileOrNum.size.toString(), inline: true },
+						{ name: 'SHA-1', value: `\`${fileOrNum.sha}\``, inline: true }
+					]);
+
+				return interaction.reply({ embeds: [embed] });
 			}
 		}]
 	]);
