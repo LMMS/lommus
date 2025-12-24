@@ -23,7 +23,7 @@ const commands = [
 		.addStringOption((option) =>
 			option
 				.setName('org')
-				.setDescription("The organization to fetch the file from. Defaults to 'LMMS'")
+				.setDescription("Can short-circuit with 'org/repo'. Defaults to 'LMMS'")
 				.setRequired(false)
 				.setMinLength(3)
 				.setMaxLength(39)

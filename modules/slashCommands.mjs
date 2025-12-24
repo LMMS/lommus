@@ -347,12 +347,17 @@ export default class SlashCommandsModule extends BotModule {
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
 				const options = {
-					org: interaction.options.getString('org') ?? 'LMMS',
+					orgPlusRepo: interaction.options.getString('org') ?? 'LMMS',
 					repo: interaction.options.getString('repo') ?? 'lmms',
 					filePath: interaction.options.getString('path', true)
 				}
 
-				const fileOrNum = await getGitHubFile(options.org, options.repo, options.filePath);
+				const maybeOrgPlusRepo = options.orgPlusRepo.split('/');
+				if (maybeOrgPlusRepo.length > 1)
+					// @ts-expect-error
+					[options.orgPlusRepo, options.repo] = maybeOrgPlusRepo;
+				const fileOrNum = await getGitHubFile(options.orgPlusRepo, options.repo, options.filePath);
+
 
 				if (typeof fileOrNum === 'number') {
 					let httpRejectReason;
@@ -373,10 +378,12 @@ export default class SlashCommandsModule extends BotModule {
 							httpRejectReason = "There was an HTTP rejection/failure on your request"
 							break;
 					}
+
 					const embed = new EmbedBuilder()
 						.setTitle(`HTTP ${fileOrNum}`)
 						.setDescription(httpRejectReason)
-						.setColor(this.colors.RED)
+						.setColor(this.colors.RED);
+
 					return interaction.reply({embeds: [embed]})
 				}
 
@@ -384,15 +391,15 @@ export default class SlashCommandsModule extends BotModule {
 				const fileType = (maybeFileExt.length > 1) ? maybeFileExt.at(-1) : '';
 
 				const embed = new EmbedBuilder()
-					.setTitle(`(${options.org}/${options.repo}) ${fileOrNum.name}`)
+					.setTitle(`(${options.orgPlusRepo}/${options.repo}) ${fileOrNum.name}`)
 					.setURL(fileOrNum.link)
 					.setDescription(`\`\`\`${fileType}\n${fileOrNum.contents}\n...\`\`\``)
+					.setColor(this.colors.GREEN)
 					.addFields([
 						{ name: 'Path', value: `\`${fileOrNum.path}\`` },
 						{ name: 'Size (b)', value: fileOrNum.size.toString(), inline: true },
 						{ name: 'SHA-1', value: `\`${fileOrNum.sha}\``, inline: true }
-					])
-					.setColor(this.colors.GREEN);
+					]);
 
 				return interaction.reply({ embeds: [embed] });
 			}
