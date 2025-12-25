@@ -23,7 +23,7 @@ const commands = [
 		.addStringOption((option) =>
 			option
 				.setName('line')
-				.setDescription('The line(s) to fetch. Format: `12`/`20-30`')
+				.setDescription('The line(s) to fetch. Format: 12 or 20-30')
 				.setRequired(false)
 		)
 		.addStringOption((option) =>
