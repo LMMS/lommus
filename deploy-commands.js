@@ -22,6 +22,12 @@ const commands = [
 		)
 		.addStringOption((option) =>
 			option
+				.setName('line')
+				.setDescription('The line(s) to fetch. Format: `12`/`20-30`')
+				.setRequired(false)
+		)
+		.addStringOption((option) =>
+			option
 				.setName('org')
 				.setDescription("Can short-circuit with 'org/repo'. Defaults to 'LMMS'")
 				.setRequired(false)
