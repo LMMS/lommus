@@ -22,6 +22,12 @@ const commands = [
 		)
 		.addStringOption((option) =>
 			option
+				.setName('line')
+				.setDescription('The line(s) to fetch. Format: 12 or 20-30')
+				.setRequired(false)
+		)
+		.addStringOption((option) =>
+			option
 				.setName('org')
 				.setDescription("Can short-circuit with 'org/repo'. Defaults to 'LMMS'")
 				.setRequired(false)
@@ -55,9 +61,15 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName('say')
 		.setDescription('say something as the bot')
-		.addStringOption(option => option.setName('message')
-			.setDescription('what LoMMuS should say')
-			.setRequired(true)),
+		.addStringOption(option =>
+			option.setName('message')
+				.setDescription('what LoMMuS should say')
+				.setRequired(true))
+		.addChannelOption(option =>
+			option.setName('channel')
+				.setDescription("Defaults to this channel")
+				.setRequired(false)
+		),
 
 	// info embed
 	new SlashCommandBuilder()

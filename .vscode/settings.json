@@ -5,4 +5,7 @@
 
 	// style options
 	"javascript.preferences.quoteStyle": "single",
+	"editor.tabSize": 2,
+	"editor.detectIndentation": false,
+	"editor.insertSpaces": false
 }
