@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
-import { ChatInputCommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, time } from 'discord.js';
+import { ChannelType, ChatInputCommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, time } from 'discord.js';
 import { LOMMUS } from '../lommus.js';
 import { formatBytes } from 'bytes-formatter';
 import { getGitHubFile } from './util/githubApi.mjs';
@@ -109,16 +109,30 @@ export default class SlashCommandsModule extends BotModule {
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
 				if (
-					!('options' in interaction)
-					|| !interaction.channel?.isSendable()
+					!interaction.channel?.isSendable()
 					|| !interaction.isRepliable()
 				) return;
 
-				const msg = String(interaction.options.get('message')?.value);
+				const options = {
+					msg: interaction.options.getString('message', true),
+					channel: interaction.options.getChannel('channel', false) ?? interaction.channel
+				};
 
-				await interaction.reply({ content: 'Message said', flags: MessageFlags.Ephemeral });
+				if (
+					options.channel.type !== ChannelType.GuildText
+					// @ts-ignore
+					|| !options.channel?.isSendable()
+				) return await interaction.reply({
+					content: "I can't send messages in that channel",
+					flags: MessageFlags.Ephemeral
+				});
 
-				return interaction.channel.send(msg);
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+				// @ts-expect-error
+				await options.channel.send(options.msg);
+
+				return interaction.deleteReply();
 			}
 		}],
 		["toggle", {
@@ -350,7 +364,7 @@ export default class SlashCommandsModule extends BotModule {
 					orgPlusRepo: interaction.options.getString('org') ?? 'LMMS',
 					repo: interaction.options.getString('repo') ?? 'lmms',
 					filePath: interaction.options.getString('path', true)
-				}
+				};
 
 				const maybeOrgPlusRepo = options.orgPlusRepo.split('/');
 				if (maybeOrgPlusRepo.length > 1)
@@ -375,7 +389,7 @@ export default class SlashCommandsModule extends BotModule {
 							break;
 
 						default:
-							httpRejectReason = "There was an HTTP rejection/failure on your request"
+							httpRejectReason = "There was an HTTP rejection/failure on your request";
 							break;
 					}
 
@@ -384,7 +398,7 @@ export default class SlashCommandsModule extends BotModule {
 						.setDescription(httpRejectReason)
 						.setColor(this.colors.RED);
 
-					return interaction.reply({embeds: [embed]})
+					return interaction.reply({ embeds: [embed] });
 				}
 
 				const maybeFileExt = options.filePath.split('.');

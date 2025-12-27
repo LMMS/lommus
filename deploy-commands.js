@@ -61,9 +61,15 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName('say')
 		.setDescription('say something as the bot')
-		.addStringOption(option => option.setName('message')
-			.setDescription('what LoMMuS should say')
-			.setRequired(true)),
+		.addStringOption(option =>
+			option.setName('message')
+				.setDescription('what LoMMuS should say')
+				.setRequired(true))
+		.addChannelOption(option =>
+			option.setName('channel')
+				.setDescription("Defaults to this channel")
+				.setRequired(false)
+		),
 
 	// info embed
 	new SlashCommandBuilder()
