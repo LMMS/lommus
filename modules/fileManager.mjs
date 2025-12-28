@@ -7,20 +7,12 @@ import { BotModule } from './util/module.mjs';
 
 export default class FileManagerModule extends BotModule {
 	/**
-	 * Prefix used by temporary directories
-	 *
-	 * @static
-	 * @type {string}
-	 */
-	static tempFolderPathPrefixName = 'lommus';
-
-	/**
 	 * Default path of where LoMMuS will write its temporary files
 	 *
 	 * @static
 	 * @type {string}
 	 */
-	static tempFolderPathPrefix = path.join(os.tmpdir(), `${path.sep}${this.tempFolderPathPrefixName}-`);
+	static tempFolderPathPrefix = path.join(os.tmpdir(), `${path.sep}lommus-`);
 
 	/**
 	 * Set of temporary files tracked
@@ -52,8 +44,8 @@ export default class FileManagerModule extends BotModule {
 			[],
 		);
 
-		this.#cleanTempDirectory(FileManagerModule.tempFolderPathPrefixName);
-		this.#createTempDirectory(FileManagerModule.tempFolderPathPrefixName);
+		this.#cleanTempDirectory();
+		this.#createTempDirectory();
 	}
 
 	/**
