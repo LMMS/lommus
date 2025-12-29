@@ -5,12 +5,12 @@
   "main": "lommus.js",
   "type": "module",
   "dependencies": {
-    "@octokit/core": "^7.0.6",
-    "bytes-formatter": "^21.6.15",
+    "@octokit/core": "7.0.6",
+    "bytes-formatter": "21.6.15",
     "discord.js": "14.25.1",
     "dotenv": "17.2.3",
-    "lzma": "^2.3.2",
-    "pm2": "^6.0.13"
+    "lzma": "2.3.2",
+    "pm2": "6.0.13"
   },
   "bugs": {
     "url": "https://github.com/lmms/lommus/issues"
