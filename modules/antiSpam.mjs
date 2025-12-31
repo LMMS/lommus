@@ -10,7 +10,7 @@ export default class AntiSpamModule extends BotModule {
 	 * @constant
 	 * @readonly
 	 */
-	urlReg = RegExp(/https?:\/\/\w+/, "i");
+	urlReg = /https?:\/\/\S+/i;
 
 	/**
 	 * The #evidence channel ID
@@ -64,9 +64,11 @@ export default class AntiSpamModule extends BotModule {
 	 * @returns {boolean}
 	 */
 	multiSearchOr(text, searchWords) {
-		return searchWords.some((el) => {
-			return text.match(new RegExp(el, 'i'));
-		});
+		return searchWords.some((el) =>
+			String(text)
+				.toLowerCase()
+				.includes(String(el).toLowerCase())
+		);
 	}
 
 	/**
@@ -77,9 +79,11 @@ export default class AntiSpamModule extends BotModule {
 	 * @returns {boolean}
 	 */
 	multiSearchAnd(text, searchWords) {
-		return searchWords.every((el) => {
-			return text.match(new RegExp(el, 'i'));
-		});
+		return searchWords.every((el) =>
+			String(text)
+				.toLowerCase()
+				.includes(String(el).toLowerCase())
+		);
 	}
 
 	/**
@@ -90,15 +94,21 @@ export default class AntiSpamModule extends BotModule {
 	 */
 	spamCheck(message) {
 		if (!message.member) return;
+		if (message.author?.bot) return;
 
 		// Exit on staff
-		if (message.member.permissions.has(PermissionFlagsBits.KickMembers)) return this.spamCheckMask.STAFF;
+		if (message.member.permissions.has(PermissionFlagsBits.KickMembers)) return;
 
 		// @everyone and URL check
-		if (message.mentions.everyone && this.urlReg.test(`${message.content}`)) return (this.spamCheckMask.EVERYONE_PING & this.spamCheckMask.URL);
+		if (message.mentions.everyone && this.urlReg.test(message.content)) return (this.spamCheckMask.EVERYONE_PING | this.spamCheckMask.URL);
 
 		// Bad domain JSON array check
-		if (badURLs.some((filter) => message.content.toLowerCase().includes(filter.toLowerCase()))) return (this.spamCheckMask.SPAM_DOMAIN);
+		if (
+			badURLs.some((filter) =>
+				message.content
+					.toLowerCase()
+					.includes(String(filter).toLowerCase()))
+		) return this.spamCheckMask.SPAM_DOMAIN;
 
 		// Old hardcoded check
 		if (
@@ -123,15 +133,20 @@ export default class AntiSpamModule extends BotModule {
 			const modChannel = message.guild?.channels.cache.get(this.modChannelId);
 
 			const spamType = this.spamCheck(message);
+			
 			if (spamType) {
-				message.delete();
+				try {
+					await message.delete();
+				} catch (error) {
+					console.error("Failed to delete message", error);
+				}
 
 				// timeout for 1 day
 				try {
 					if (!message.member) { console.warn("Member cannot be found from message, is it possible that they've exited?"); return; };
 
 					// make sure not to mute the dev
-					if (message.member.id !== config.ownerId) await message.member.timeout(86400);
+					if (message.member.id !== config.ownerId) await message.member.timeout(86_400_000);
 				} catch (error) {
 					console.error("Attempted to mute member and failed", error);
 				}
@@ -147,10 +162,11 @@ export default class AntiSpamModule extends BotModule {
 					.setFooter({
 						text: `Member: ${message.author.id}`
 					})
-					.setDescription(`**Offender:** ${message.author.tag} ${message.author}
-													**Type:** ${spamType}
-													**Message:**
-													${blockQuote(message.cleanContent)}`);
+					.setFields([
+						{ name: 'Offender', value: `${message.author.tag} ${message.author}`, inline: true },
+						{ name: 'Type', value: String(spamType), inline: true },
+						{ name: 'Message', value: blockQuote(message.cleanContent) }
+					]);
 
 				if (evidenceChannel?.isSendable()) await evidenceChannel.send({ embeds: [evidenceEmbed] });
 
