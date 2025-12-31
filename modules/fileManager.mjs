@@ -70,14 +70,15 @@ export default class FileManagerModule extends BotModule {
 	 *
 	 * @static
 	 * @param {string} b64 The Base64-encoded data
-	 * @param {string} outputPath The output path
+	 * @param {string} tmpOutputFile The output file path. Appended to `FileManagerModule.tempFolderPathPrefix`
 	 * @param {number} [chunkSize=64 * 1024] The chunk size. Defaults to `64x1024`
 	 */
-	static async streamB64ToFile(b64, outputPath, chunkSize = 64 * 1024) {
-		this.tempFiles.add(outputPath);
+	static async streamB64ToFile(b64, tmpOutputFile, chunkSize = 64 * 1024) {
+		const filePath = `${this.tempFolderPathPrefix}/${tmpOutputFile}`;
+		this.tempFiles.add(filePath);
 
 		return new Promise((resolve, reject) => {
-			const stream = fs.createWriteStream(outputPath, { autoClose: true });
+			const stream = fs.createWriteStream(filePath, { autoClose: true });
 
 			stream.on('error', reject);
 			stream.on('finish', resolve);
@@ -103,7 +104,7 @@ export default class FileManagerModule extends BotModule {
 				stream.write(Buffer.from(remainder, 'base64'));
 			}
 
-			this.cleanupFileEntry(outputPath);
+			this.cleanupFileEntry(filePath);
 		});
 	}
 
@@ -133,6 +134,6 @@ export default class FileManagerModule extends BotModule {
 	init() {
 		this.#cleanTempDirectory();
 		this.#createTempDirectory();
-		return true
+		return true;
 	}
 }
