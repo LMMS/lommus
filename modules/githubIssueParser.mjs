@@ -14,8 +14,7 @@ export default class GitHubIssueParserModule extends BotModule {
 		super(
 			client,
 			'Github Issue Parser',
-			'Parses #discriminators and links respective issue/pull requests',
-			['messageCreate']
+			'Parses #discriminators and links respective issue/pull requests'
 		);
 	}
 
