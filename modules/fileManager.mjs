@@ -41,11 +41,7 @@ export default class FileManagerModule extends BotModule {
 			client,
 			"File Manager",
 			"Manages file operations, disk data streaming, and temporary directory management",
-			[],
 		);
-
-		this.#cleanTempDirectory();
-		this.#createTempDirectory();
 	}
 
 	/**
@@ -132,5 +128,11 @@ export default class FileManagerModule extends BotModule {
 			console.error("Path not in tempFiles set!", error);
 			return false;
 		}
+	}
+
+	init() {
+		this.#cleanTempDirectory();
+		this.#createTempDirectory();
+		return true
 	}
 }
