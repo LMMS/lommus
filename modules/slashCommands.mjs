@@ -18,18 +18,18 @@ import { getGitHubFile } from './util/githubApi.mjs';
 export default class SlashCommandsModule extends BotModule {
 
 	/**
-	 * The #evidence channel ID
+	 * The #logs channel ID
 	 *
 	 * @type {string}
 	 */
-	evidenceChannelId = "486590751032082462";
+	logsChannelId = "283757917230858240";
 
 	/**
-	 * The #evidence channel
+	 * The #logs channel
 	 *
 	 * @type {import('discord.js').TextChannel}
 	 */
-	evidenceChannel;
+	logsChannel;
 
 	/**
 	 * Creates an instance of SlashCommandsModule.
@@ -45,8 +45,8 @@ export default class SlashCommandsModule extends BotModule {
 		);
 
 		// @ts-expect-error
-		this.evidenceChannel = this.client.channels.cache.get(this.evidenceChannelId);
-		if (this.evidenceChannel?.partial) this.evidenceChannel.fetch();
+		this.logsChannel = this.client.channels.cache.get(this.logsChannelId);
+		if (this.logsChannel?.partial) this.logsChannel.fetch();
 	}
 
 	/**
@@ -78,7 +78,7 @@ export default class SlashCommandsModule extends BotModule {
 
 		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
 
-		return await this.evidenceChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
+		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
 	}
 
 	/** @type {CommandStruct} */
