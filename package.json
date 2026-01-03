@@ -10,7 +10,7 @@
     "discord.js": "14.25.1",
     "dotenv": "17.2.3",
     "lzma": "2.3.2",
-    "pm2": "6.0.13"
+    "pm2": "6.0.14"
   },
   "bugs": {
     "url": "https://github.com/lmms/lommus/issues"
