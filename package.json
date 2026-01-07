@@ -30,10 +30,10 @@
   "license": "ISC",
   "private": "true",
   "scripts": {
-    "start": "node lommus.js",
+    "start": "bun lommus.ts",
     "daemon-win": "powershell -File ./scripts/run.ps1",
     "daemon-linux": "bash ./scripts/run.sh",
-    "deploy-commands": "node deploy-commands.js"
+    "deploy-commands": "bun deploy-commands.ts"
   },
   "devDependencies": {
     "@types/lzma": "^2.3.0",

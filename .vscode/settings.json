@@ -1,7 +1,7 @@
 {
 	// preferred package manager
-	"npm.packageManager": "npm",
-	"npm.scriptRunner": "npm",
+	"npm.packageManager": "bun",
+	"npm.scriptRunner": "bun",
 
 	// style options
 	"javascript.preferences.quoteStyle": "single",

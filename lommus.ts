@@ -5,6 +5,7 @@ dotenv.config({ quiet: true });
 import { ActivityType, Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { config } from './modules/util/config.mjs';
 import { THROW_REASONS } from './modules/util/globals.mjs';
+import { BotModule } from './modules/util/module.mjs';
 
 console.log("LoMMuS is initializing...");
 
@@ -37,32 +38,27 @@ class LoMMuS {
 	 */
 	_isModuleLoadingDone = false;
 
-	/**
-	 * Array of module names that have been loaded and registered
-	 *
-	 * @type {Set<import('./modules/util/module.mjs').BotModule>}
-	 */
-	registeredModules = new Set();
+	/** Array of module names that have been loaded and registered */
+	registeredModules = new Set<BotModule>();
 
 	/**
 	 * Initializes LoMMuS and logs in
-	 * @param {string} token
+	 *
+	 * @param {string} token The bot token
 	 */
-	constructor (token) {
+	constructor(token: string) {
 		console.log("Instantiating LoMMuS...");
 		this.setupBot();
 		this.client.login(token);
 	}
 
-	/**
-	 * Loads ES-style modules from the `./modules` directory
-	 */
+	/** Loads ES-style modules from the `./modules` directory */
 	async loadESModules() {
 		console.log("Initializing ES module loading...");
 
 		const moduleFiles = fs
 			.readdirSync('./modules')
-			.filter(file => file.endsWith('.mjs'));
+			.filter(file => file.endsWith('.mts') || file.endsWith('.mjs'));
 
 		for (const file of moduleFiles) {
 			// cachebust
@@ -82,8 +78,7 @@ class LoMMuS {
 				continue;
 			}
 
-			/** @type {InstanceType<typeof import('./modules/util/module.mjs').BotModule>} */
-			let instance;
+			let instance: InstanceType<typeof BotModule>;
 
 			try {
 				instance = new mod.default(this.client);
@@ -112,9 +107,9 @@ class LoMMuS {
 	/**
 	 * Checks all of the modules that have been loaded
 	 *
-	 * @param {import('./modules/util/module.mjs').BotModule} moduleName The name of the module
+	 * @param moduleName The name of the module
 	 */
-	#checkLoadedModules(moduleName) {
+	#checkLoadedModules(moduleName: BotModule) {
 		if (this.registeredModules.has(moduleName)) throw new Error(`Module ${moduleName.name} was attempted to load more than once!`);
 
 		this.registeredModules.add(moduleName);
@@ -160,5 +155,6 @@ process.on('uncaughtException', (error) => {
 });
 
 // final token check
-/** @type {LoMMuS} */
-export const LOMMUS = /** @type {LoMMuS} */ ((process.env.TOKEN) ? new LoMMuS(process.env.TOKEN) : console.error("Token not found in env!"));
+if (!process.env.TOKEN) throw new Error("Token not found in env!")
+
+export const LOMMUS = new LoMMuS(process.env.TOKEN)

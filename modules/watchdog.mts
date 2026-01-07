@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events, PermissionFlagsBits } from 'discord.js';
+import { Client, EmbedBuilder, Events, PermissionFlagsBits } from 'discord.js';
 import { setTimeout as wait } from 'node:timers/promises';
 import { BotModule } from './util/module.mjs';
 
@@ -19,9 +19,8 @@ export default class WatchdogModule extends BotModule {
 	 * Creates an instance of WatchdogModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			'Watchdog',

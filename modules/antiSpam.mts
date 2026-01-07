@@ -1,4 +1,4 @@
-import { blockQuote, EmbedBuilder, Events, Message, PermissionFlagsBits } from 'discord.js';
+import { blockQuote, Client, EmbedBuilder, Events, Message, PermissionFlagsBits,type ColorResolvable } from 'discord.js';
 import { BotModule } from './util/module.mjs';
 import badURLs from '../data/spam.json' with { type: 'json' };
 import { config } from './util/config.mjs';
@@ -45,9 +45,8 @@ export default class AntiSpamModule extends BotModule {
 	 * Creates an instance of AntiSpamModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			"Anti Spam",
@@ -59,11 +58,10 @@ export default class AntiSpamModule extends BotModule {
 	/**
 	 * Only match *some* of the words in the text
 	 *
-	 * @param {string} text The text to search in
-	 * @param {string[]} searchWords The words to search in `text`
-	 * @returns {boolean}
+	 * @param text The text to search in
+	 * @param searchWords The words to search in `text`
 	 */
-	multiSearchOr(text, searchWords) {
+	multiSearchOr(text: string, searchWords: string[]): boolean {
 		return searchWords.some((el) =>
 			String(text)
 				.toLowerCase()
@@ -74,11 +72,10 @@ export default class AntiSpamModule extends BotModule {
 	/**
 	 * Only match *all* of the words in the text
 	 *
-	 * @param {string} text The text to search in
-	 * @param {string[]} searchWords The words to search in `text`
-	 * @returns {boolean}
+	 * @param text The text to search in
+	 * @param searchWords The words to search in `text`
 	 */
-	multiSearchAnd(text, searchWords) {
+	multiSearchAnd(text: string, searchWords: string[]): boolean {
 		return searchWords.every((el) =>
 			String(text)
 				.toLowerCase()
@@ -89,10 +86,10 @@ export default class AntiSpamModule extends BotModule {
 	/**
 	 * Performs a spam check based on a number of factors and input
 	 *
-	 * @param {Message} message The message to check
+	 * @param message The message to check
 	 * @returns A number based off of `AntiSpamModule.spamCheckMask`'s members
 	 */
-	spamCheck(message) {
+	spamCheck(message: Message): number | void {
 		if (!message.member) return;
 		if (message.author?.bot) return;
 
@@ -133,7 +130,7 @@ export default class AntiSpamModule extends BotModule {
 			const modChannel = message.guild?.channels.cache.get(this.modChannelId);
 
 			const spamType = this.spamCheck(message);
-			
+
 			if (spamType) {
 				try {
 					await message.delete();

@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events } from 'discord.js';
+import { Client, EmbedBuilder, Events,type ColorResolvable } from 'discord.js';
 import { BotModule } from './util/module.mjs';
 
 export default class AnnoyanceModule extends BotModule {
@@ -8,9 +8,8 @@ export default class AnnoyanceModule extends BotModule {
 	 * Creates an instance of AnnoyanceModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			'Annoyance',
