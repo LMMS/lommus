@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@octokit/core": "7.0.6",
+    "bun": "1.3.5",
     "bytes-formatter": "21.6.15",
     "discord.js": "14.25.1",
     "dotenv": "17.2.3",
