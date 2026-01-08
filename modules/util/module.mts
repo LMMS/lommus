@@ -40,5 +40,5 @@ export abstract class BotModule {
 	}
 
 	/** Abstract method for initializing the module. This module must be concretely implemented by subclasses else an error will be thrown */
-	abstract init(): void;
+	public abstract init(): void;
 }
