@@ -1,18 +1,18 @@
 import { BotModule } from './util/module.mjs';
-import { ChannelType, ChatInputCommandInteraction, Client, CommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, PermissionsBitField, TextChannel, time, type CacheType, type ColorResolvable } from 'discord.js';
+import { ChannelType, ChatInputCommandInteraction, Client, CommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, PermissionsBitField, TextChannel, time, type CacheType } from 'discord.js';
 import { config } from './util/config.mjs';
 import { formatBytes } from 'bytes-formatter';
 import { getGitHubFile } from './util/githubApi.mjs';
 import { LOMMUS } from '../lommus.js';
 import { readFile } from 'node:fs/promises';
 
-type CommandObject = Readonly<{
-	[key: string]: {
+type CommandObject = Readonly<
+	Record<string, {
 		perms: bigint
 		bypassUserIds: string[]
 		handler: (interaction: ChatInputCommandInteraction<CacheType>) => any
-	}
-}>
+	}>
+>
 
 export default class SlashCommandsModule extends BotModule {
 	/** The #logs channel ID */
