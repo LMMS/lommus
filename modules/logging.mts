@@ -1,4 +1,4 @@
-import { blockQuote, time, EmbedBuilder, Events, ActivityType, AuditLogEvent } from 'discord.js';
+import { blockQuote, Client, time, EmbedBuilder, Events, ActivityType, AuditLogEvent } from 'discord.js';
 import * as my_lzma from 'lzma';
 import { BotModule } from './util/module.mjs';
 
@@ -8,9 +8,8 @@ export default class LoggingModule extends BotModule {
 	 * Creates an instance of LoggingModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			'Logging',

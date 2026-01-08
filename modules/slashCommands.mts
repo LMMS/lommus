@@ -1,79 +1,60 @@
-import { readFile } from 'node:fs/promises';
 import { BotModule } from './util/module.mjs';
+import { ChannelType, ChatInputCommandInteraction, Client, CommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, PermissionsBitField, TextChannel, time, type CacheType } from 'discord.js';
 import { config } from './util/config.mjs';
-import { ChannelType, ChatInputCommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, time } from 'discord.js';
-import { LOMMUS } from '../lommus.js';
 import { formatBytes } from 'bytes-formatter';
 import { getGitHubFile } from './util/githubApi.mjs';
+import { LOMMUS } from '../lommus.js';
+import { readFile } from 'node:fs/promises';
 
-/**
- * @typedef {ReadonlyMap<string, {
- * perms: bigint;
- * bypassUserIds: string[];
- * handler: (
- * interaction: import("discord.js").ChatInputCommandInteraction<import("discord.js").CacheType>
- * ) => *;
- * }>} CommandStruct
- */
+type CommandObject = Readonly<
+	Record<string, {
+		perms: bigint
+		bypassUserIds: string[]
+		handler: (interaction: ChatInputCommandInteraction<CacheType>) => any
+	}>
+>
+
 export default class SlashCommandsModule extends BotModule {
+	/** The #logs channel ID */
+	logsChannelId: string = "283757917230858240";
 
-	/**
-	 * The #logs channel ID
-	 *
-	 * @type {string}
-	 */
-	logsChannelId = "283757917230858240";
-
-	/**
-	 * The #logs channel
-	 *
-	 * @type {import('discord.js').TextChannel}
-	 */
-	logsChannel;
+	/** The #logs channel */
+	logsChannel: TextChannel;
 
 	/**
 	 * Creates an instance of SlashCommandsModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			"Slash Commands",
 			"Event handlers for slash commands"
 		);
 
-		// @ts-expect-error
-		this.logsChannel = this.client.channels.cache.get(this.logsChannelId);
+		this.logsChannel = this.client.channels.cache.get(this.logsChannelId) as TextChannel;
 		if (this.logsChannel?.partial) this.logsChannel.fetch();
 	}
 
 	/**
 	 * Checks whether the user has proper permissions, or is of the configured ID
 	 *
-	 * @param {import('discord.js').Interaction<import('discord.js').CacheType>} interaction The interaction to pass
-	 * @param {import('discord.js').PermissionFlagsBits} bits The permission bits to check
-	 * @param {string?} id The user ID to check
+	 * @param interaction The interaction to pass
+	 * @param bits The permission bits to check
+	 * @param id The user ID to check
 	 * @returns {boolean}
 	 */
-	checkPerms(interaction, bits, id) {
-		if (id) {
-			return (
-				(interaction.memberPermissions?.has(bits) ?? false)
-				|| (interaction.user.id === id)
-			);
-		} else {
-			return interaction.memberPermissions?.has(bits) ?? false;
-		}
+	private checkPerms(interaction: CommandInteraction<CacheType>, bits: PermissionsBitField, id: string): boolean {
+		return (interaction.memberPermissions?.has(bits) ?? false) || (interaction.user.id === id);
 	}
 
 	/**
 	 * Rejects a given command interaction
 	 *
-	 * @param {ChatInputCommandInteraction<import('discord.js').CacheType>} interaction The interaction to pass here
+	 * @param interaction The interaction to pass here
 	 */
-	async rejectUnprivilegedCommand(interaction) {
+	private async rejectUnprivilegedCommand(interaction: CommandInteraction<CacheType>) {
 		const { id, globalName, username } = interaction.user;
 
 		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
@@ -81,9 +62,8 @@ export default class SlashCommandsModule extends BotModule {
 		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
 	}
 
-	/** @type {CommandStruct} */
-	commandList = new Map([
-		["restart", {
+	private commandList: CommandObject = Object.freeze({
+		"restart": {
 			perms: PermissionFlagsBits.BanMembers,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -102,8 +82,8 @@ export default class SlashCommandsModule extends BotModule {
 
 				return setTimeout(() => process.exit(1), 1000);
 			}
-		}],
-		["say", {
+		},
+		"say": {
 			perms: PermissionFlagsBits.KickMembers,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -133,8 +113,8 @@ export default class SlashCommandsModule extends BotModule {
 
 				return interaction.deleteReply();
 			}
-		}],
-		["toggle", {
+		},
+		"toggle": {
 			perms: PermissionFlagsBits.Administrator,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -145,8 +125,8 @@ export default class SlashCommandsModule extends BotModule {
 				// noop for now
 				return;
 			}
-		}],
-		["kill", {
+		},
+		"kill": {
 			perms: PermissionFlagsBits.BanMembers,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -162,37 +142,24 @@ export default class SlashCommandsModule extends BotModule {
 
 				return setTimeout(() => process.exit(0), 10);
 			}
-		}],
-		["reload", {
+		},
+		"reload": {
 			perms: PermissionFlagsBits.KickMembers,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
+				console.log("Reloading modules...");
+
 				const embed = new EmbedBuilder()
-					.setColor(this.colors.RED)
-					.setTitle("MODULE RELOADING IS BROKEN")
-					.setDescription('*Node currently does not refresh a module\'s dependency tree* even when it\'s imported again with cache busting. There is also a *memory leak with re-importing modules*.\n\nRestart the bot instead');
+					.setTitle('Reloading modules')
+					.setColor(this.colors.GRAY)
+					.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
 
-				return await interaction.reply({ embeds: [embed] });
-				/*
-					if (this.checkPerms(interaction, PermissionFlagsBits.BanMembers, config.ownerId)) {
-						console.log("Reloading modules...");
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 
-						const embed = new EmbedBuilder()
-							.setAuthor({ name: 'Reloading modules', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-							.setColor(this.colors.GRAY)
-							.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
-
-						await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-
-						await LOMMUS.loadESModules();
-					} else {
-						this.rejectUnprivilegedCommand(interaction);
-					}
-					break;
-					*/
+				await LOMMUS.loadESModules();
 			}
-		}],
-		["whois", {
+		},
+		"whois": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -233,8 +200,8 @@ export default class SlashCommandsModule extends BotModule {
 
 				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
-		}],
-		["server", {
+		},
+		"server": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -265,8 +232,8 @@ export default class SlashCommandsModule extends BotModule {
 
 				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
-		}],
-		["bot", {
+		},
+		"bot": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -280,8 +247,8 @@ export default class SlashCommandsModule extends BotModule {
 
 				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
-		}],
-		["topic", {
+		},
+		"topic": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -293,37 +260,35 @@ export default class SlashCommandsModule extends BotModule {
 
 				return await interaction.reply({ embeds: [embed] });
 			}
-		}],
-		["dump", {
+		},
+		"dump": {
 			perms: PermissionFlagsBits.KickMembers,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
-				{
-					const loadedLOMMUSModules = Array.from(LOMMUS.registeredModules)
-						.map((mod, i) => `${i + 1}. \`${mod.name}\`: *${mod.description}*`)
-						.join('\n');
+				const loadedLOMMUSModules = Array.from(LOMMUS.registeredModules)
+					.map((mod, i) => `${i + 1}. \`${mod.name}\`: *${mod.description}*`)
+					.join('\n');
 
-					const LOMMUSIntents = LOMMUS.client.options.intents
-						.toArray()
-						.map((intent, i) => `${i + 1}. \`${intent}\``)
-						.join('\n');
+				const LOMMUSIntents = LOMMUS.client.options.intents
+					.toArray()
+					.map((intent, i) => `${i + 1}. \`${intent}\``)
+					.join('\n');
 
-					const embed = new EmbedBuilder()
-						.setDescription(`\`config.json\`
+				const embed = new EmbedBuilder()
+					.setDescription(`\`config.json\`
 															\`\`\`json\n${JSON.stringify(config, null, 2)}\`\`\``
-						)
-						.addFields([
-							{ name: 'Loaded modules', value: loadedLOMMUSModules, inline: true },
-							{ name: 'Intents', value: LOMMUSIntents, inline: true },
-						])
-						.setAuthor({ name: `${new Date().toISOString()}` })
-						.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
+					)
+					.addFields([
+						{ name: 'Loaded modules', value: loadedLOMMUSModules, inline: true },
+						{ name: 'Intents', value: LOMMUSIntents, inline: true },
+					])
+					.setAuthor({ name: `${new Date().toISOString()}` })
+					.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
 
-					await interaction.reply({ embeds: [embed] });
-				}
+				await interaction.reply({ embeds: [embed] });
 			}
-		}],
-		["ping", {
+		},
+		"ping": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -337,8 +302,8 @@ export default class SlashCommandsModule extends BotModule {
 					await interaction.reply('Failed to get ping data');
 				}
 			}
-		}],
-		["nightly", {
+		},
+		"nightly": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -354,8 +319,8 @@ export default class SlashCommandsModule extends BotModule {
 
 				await interaction.deleteReply();
 			}
-		}],
-		["file", {
+		},
+		"file": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
 			handler: async (interaction) => {
@@ -416,8 +381,8 @@ export default class SlashCommandsModule extends BotModule {
 
 				return interaction.reply({ embeds: [embed] });
 			}
-		}]
-	]);
+		}
+	})
 
 	init() {
 		this.client.on(Events.InteractionCreate, async (interaction) => {
@@ -429,7 +394,8 @@ export default class SlashCommandsModule extends BotModule {
 			// Screen bad command interactions
 			if (!interaction.isChatInputCommand()) return;
 
-			const cmd = this.commandList.get(interaction.commandName);
+
+			const cmd = this.commandList[interaction.commandName];
 			if (!cmd) return;
 
 			if (interaction.memberPermissions?.has(cmd.perms) || cmd.bypassUserIds.includes(interaction.user.id)) {

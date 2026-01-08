@@ -4,39 +4,32 @@ import fsAsync from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { BotModule } from './util/module.mjs';
+import type { Client } from 'discord.js';
 
 export default class FileManagerModule extends BotModule {
 	/**
 	 * Default path of where LoMMuS will write its temporary files
-	 *
-	 * @static
-	 * @type {string}
 	 */
-	static tempFolderPathPrefix = path.join(os.tmpdir(), `${path.sep}lommus-`);
+	static tempFolderPathPrefix: fs.PathLike = path.join(os.tmpdir(), `${path.sep}lommus-`);
 
 	/**
 	 * Set of temporary files tracked
-	 *
-	 * @static
-	 * @type {Set<string>}
 	 */
-	static tempFiles = new Set();
+	static tempFiles: Set<string> = new Set();
 
 	/**
 	 * The temp folder path
 	 *
 	 * @static
-	 * @type {fs.PathLike}
 	 */
-	static tempFolderPath;
+	static tempFolderPath: fs.PathLike;
 
 	/**
 	 * Creates an instance of TempFile.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor (client: Client) {
 		super(
 			client,
 			"File Manager",
@@ -47,19 +40,19 @@ export default class FileManagerModule extends BotModule {
 	/**
 	 * Scary
 	 *
-	 * @param {string} [prefix=FileManagerModule.tempFolderPathPrefix]
+	 * @param prefix
 	 */
-	#cleanTempDirectory(prefix = FileManagerModule.tempFolderPathPrefix) {
+	#cleanTempDirectory(prefix: fs.PathLike = FileManagerModule.tempFolderPathPrefix) {
 		exec(`rm -r ${prefix}*`);
 	}
 
 	/**
 	 * Creates a temporary directory
 	 *
-	 * @param {string} [prefix=FileManagerModule.tempFolderPathPrefix] The name of the directory
+	 * @param prefix The name of the directory
 	 */
-	#createTempDirectory(prefix = FileManagerModule.tempFolderPathPrefix) {
-		fs.mkdtemp(prefix, (err, folder) => {
+	#createTempDirectory(prefix: fs.PathLike = FileManagerModule.tempFolderPathPrefix) {
+		fs.mkdtemp(prefix.toString(), (err, folder) => {
 			if (err) throw new Error(`Error while creating temporary folder: ${err}`);
 			FileManagerModule.tempFolderPath = folder;
 		});
@@ -69,11 +62,11 @@ export default class FileManagerModule extends BotModule {
 	 * Streams chunked Base64-encoded data to a file
 	 *
 	 * @static
-	 * @param {string} b64 The Base64-encoded data
-	 * @param {string} tmpOutputFile The output file path. Appended to `FileManagerModule.tempFolderPathPrefix`
-	 * @param {number} [chunkSize=64 * 1024] The chunk size. Defaults to `64x1024`
+	 * @param b64 The Base64-encoded data
+	 * @param tmpOutputFile The output file path. Appended to `FileManagerModule.tempFolderPathPrefix`
+	 * @param chunkSize The chunk size. Defaults to `64 * 1024`
 	 */
-	static async streamB64ToFile(b64, tmpOutputFile, chunkSize = 64 * 1024) {
+	static async streamB64ToFile(b64: string, tmpOutputFile: string, chunkSize = 64 * 1024) {
 		const filePath = `${this.tempFolderPathPrefix}/${tmpOutputFile}`;
 		this.tempFiles.add(filePath);
 
@@ -83,8 +76,8 @@ export default class FileManagerModule extends BotModule {
 			stream.on('error', reject);
 			stream.on('finish', resolve);
 
-			/** The remaining data not covered by the chunk @type {string} */
-			let remainder = "";
+			/** The remaining data not covered by the chunk */
+			let remainder: string = "";
 
 			for (let i = 0; i < b64.length; i += chunkSize) {
 				/** The particular chunk this iteration */
@@ -112,10 +105,10 @@ export default class FileManagerModule extends BotModule {
 	 * Cleans up the given file entry. Must exist on the `TempFile.tempFiles` set
 	 *
 	 * @static
-	 * @param {string} filePath The path to clean up. Must correspond to `TempFile.tempFiles`
-	 * @returns {Promise<boolean>} Is the operation successful or not?
+	 * @param filePath The path to clean up. Must correspond to `TempFile.tempFiles`
+	 * @returns Is the operation successful or not?
 	 */
-	static async cleanupFileEntry(filePath) {
+	static async cleanupFileEntry(filePath: string): Promise<boolean> {
 		if (!this.tempFiles.has(filePath)) {
 			console.error("Path not in tempFiles set!");
 			return false;

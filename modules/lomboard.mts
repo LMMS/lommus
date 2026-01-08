@@ -1,56 +1,44 @@
-import { EmbedBuilder, Events } from 'discord.js';
+import { Client, EmbedBuilder, Events, GuildEmoji, Message, TextChannel } from 'discord.js';
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
 
 export default class LomboardModule extends BotModule {
 	/**
 	 * The emoji ID used for starring messages
-	 *
-	 * @type {string}
 	 */
-	starEmojiId = '1194451869829967952';
+	starEmojiId: string = '1194451869829967952';
 
 
 	/**
 	 * The star emoji
-	 *
-	 * @type {import('discord.js').GuildEmoji}
 	 */
-	starEmoji;
+	starEmoji: GuildEmoji;
 
 	/**
 	 * The `#lomboard` channel ID
-	 *
-	 * @type {string}
 	 */
-	lomboardChannelId = '1074109666730197083';
+	lomboardChannelId: string = '1074109666730197083';
 
-	/**
-	 * The `#lomboard` channel
-	 *
-	 * @type {import('discord.js').TextChannel}
-	 */
-	lomboardChannel;
+	/** The `#lomboard` channel */
+	lomboardChannel: TextChannel;
 
 	/**
 	 * Number of reactions needed to get to the Lomboard
-	 *
-	 * @type {number}
 	 */
-	reactionsNeeded = config.lomboardReactionLimit;
+	reactionsNeeded: number = config.lomboardReactionLimit;
 
 	/**
 	 * Creates an instance of LomboardModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			'Lomboard',
 			'Starboard, Lommus Edition'
 		);
+
 		let cachedStarEmoji = client.emojis.cache.get(this.starEmojiId);
 		if (cachedStarEmoji) {
 			this.starEmoji = cachedStarEmoji
@@ -60,8 +48,7 @@ export default class LomboardModule extends BotModule {
 
 		let cachedLomboardChannel = client.channels.cache.get(this.lomboardChannelId);
 		if (cachedLomboardChannel) {
-			// @ts-ignore
-			this.lomboardChannel = cachedLomboardChannel
+			this.lomboardChannel = cachedLomboardChannel as TextChannel
 		} else {
 			throw new Error("Can't find Lomboard channel!");
 		}
@@ -72,7 +59,7 @@ export default class LomboardModule extends BotModule {
 			if (reaction.partial) await reaction.fetch();
 
 			/** The message that received a reaction */
-			const message = reaction.message;
+			const message = reaction.message as Message<boolean>;
 			if (message.partial) await message.fetch();
 			if (!message.guild || !message.channel.isTextBased()) return;
 
@@ -91,8 +78,8 @@ export default class LomboardModule extends BotModule {
 				&& message.author.id === user.id
 				&& reaction.emoji.id === this.starEmoji.id
 			) reaction.users
-					.remove(user.id)
-					.catch(err => {
+				.remove(user.id)
+				.catch(err => {
 					console.error('Failed to remove reaction:', err)
 				})
 
@@ -124,6 +111,7 @@ export default class LomboardModule extends BotModule {
 				const embed = EmbedBuilder.from(boardedMsgEmbed)
 					.setColor(boardedMsgEmbed.color)
 					.setDescription(boardedMsgEmbed.description)
+					// @ts-expect-error
 					.setTitle(`${this.starEmoji} ${messageStarReactions.count} • #${message.channel.name}${messageAttachment}`)
 					.setFooter(boardedMsgEmbed.footer);
 
@@ -136,10 +124,11 @@ export default class LomboardModule extends BotModule {
 					.setTimestamp(message.createdTimestamp)
 					.setDescription(`${message.author}${messageContent}
 														\n[jump to message](${message.url})`)
+					// @ts-expect-error
 					.setTitle(`${this.starEmoji} ${messageStarReactions.count}  •  #${message.channel.name}${messageAttachment}`)
 					.setFooter({ text: message.id });
 
-					return await this.lomboardChannel.send({ embeds: [embed], files: [...message.attachments.values()] })
+				return await this.lomboardChannel.send({ embeds: [embed], files: [...message.attachments.values()] })
 			}
 		})
 	}

@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events } from 'discord.js';
+import { Client, EmbedBuilder, Events, GuildEmoji, type ColorResolvable } from 'discord.js';
 import { BotModule } from './util/module.mjs';
 import { config } from './util/config.mjs';
 
@@ -8,9 +8,8 @@ export default class GitHubIssueParserModule extends BotModule {
 	 * Creates an instance of GitHubIssueParserModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			'Github Issue Parser',
@@ -37,9 +36,8 @@ export default class GitHubIssueParserModule extends BotModule {
 
 			if (!matches.length) return;
 
-			// Initiate array for output
-			/** @type {string[]} */
-			const output = [];
+			/** Initiate array for output */
+			const output: string[] = [];
 			const seen = new Set();
 
 			for (const m of matches) {
@@ -76,8 +74,8 @@ export default class GitHubIssueParserModule extends BotModule {
 						// Check for valid JSON response
 						if (data.user.login) {
 							// Initialize emoji variable
-							/** @type {import('discord.js').GuildEmoji} */
-							let status;
+
+							let status: GuildEmoji;
 
 							// If Else stack to set status to proper emoji. should probably be a switch case in hindsight
 							if (data.pull_request === undefined && data.state === 'open') {

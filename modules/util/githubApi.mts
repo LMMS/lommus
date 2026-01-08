@@ -5,26 +5,24 @@ const octokit = new Octokit({
 	userAgent: 'LoMMuS/main'
 });
 
-/**
- * @typedef {{
-	* path: string
-	* name: string
-	* link: string
-	* size: number
-	* sha: string
-	* contents: string
- * }} GitHubFileResult */
+type GitHubFileResult = {
+	path: string
+	name: string
+	link: string
+	size: number
+	sha: string
+	contents: string
+}
 
 /**
  * Fetches and parses a given file from a GitHub repository
  *
  * @export
- * @param {string} org The organization identifier
- * @param {string} repo The repo identifier
- * @param {string} filePath The path of the file
- * @returns {Promise<number|GitHubFileResult>}
+ * @param org The organization identifier
+ * @param repo The repo identifier
+ * @param filePath The path of the file
  */
-export async function getGitHubFile(org, repo, filePath) {
+export async function getGitHubFile(org: string, repo: string, filePath: string): Promise<number | GitHubFileResult> {
 	const request = await octokit.request(`GET /repos/{owner}/{repo}/contents/{path}`, {
 		mediaType: {
 			format: 'json'

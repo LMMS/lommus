@@ -1,22 +1,19 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, EmbedBuilder, Events, MessageFlags, PermissionFlagsBits,type ColorResolvable } from 'discord.js';
 import fs from 'node:fs';
 import { BotModule } from './util/module.mjs';
 
 export default class InfoEmbedModule extends BotModule {
 	/**
 	 * List of rules from the JSON file
-	 *
-	 * @type {*}
 	 */
-	rulelist = JSON.parse(fs.readFileSync('./data/rules.json', { 'encoding': 'utf-8' }));
+	rulelist: Record<string, Record<string, string>> = JSON.parse(fs.readFileSync('./data/rules.json', { 'encoding': 'utf-8' }));
 
 	/**
 	 * Creates an instance of InfoEmbedModule.
 	 *
 	 * @constructor
-	 * @param {import('discord.js').Client} client
 	 */
-	constructor (client) {
+	constructor(client: Client) {
 		super(
 			client,
 			'Info Embed',
@@ -28,10 +25,10 @@ export default class InfoEmbedModule extends BotModule {
 		/**
 		 * Convenient integer to UTF emoji converter function
 		 *
-		 * @param {string} string String to
+		 * @param string String to
 		 * @returns {string} Replaced string
 		 */
-		function numberToEmoji(string) {
+		function numberToEmoji(string: string): string {
 			return string
 				.replace(/0/g, '0️⃣')
 				.replace(/1/g, '1️⃣')
