@@ -10,10 +10,8 @@ export default class WatchdogModule extends BotModule {
 
 	/**
 	 * The string ID of the #resources channel
-	 *
-	 * @type {string}
 	 */
-	resourcesChannelId = "836022138913816586";
+	resourcesChannelId: string = "836022138913816586";
 
 	/**
 	 * Creates an instance of WatchdogModule.

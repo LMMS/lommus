@@ -14,17 +14,13 @@ export default class AntiSpamModule extends BotModule {
 
 	/**
 	 * The #evidence channel ID
-	 *
-	 * @type {string}
 	 */
-	evidenceChannelId = '486590751032082462';
+	evidenceChannelId: string = '486590751032082462';
 
 	/**
 	 * The #mod channel ID
-	 *
-	 * @type {string}
 	 */
-	modChannelId = '242405592998608896';
+	modChannelId: string = '242405592998608896';
 
 	/**
 	 * The bitmask for `spamCheck`

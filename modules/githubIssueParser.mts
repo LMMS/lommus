@@ -36,9 +36,8 @@ export default class GitHubIssueParserModule extends BotModule {
 
 			if (!matches.length) return;
 
-			// Initiate array for output
-			/** @type {string[]} */
-			const output = [];
+			/** Initiate array for output */
+			const output: string[] = [];
 			const seen = new Set();
 
 			for (const m of matches) {

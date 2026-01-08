@@ -9,19 +9,13 @@ import type { Client } from 'discord.js';
 export default class FileManagerModule extends BotModule {
 	/**
 	 * Default path of where LoMMuS will write its temporary files
-	 *
-	 * @static
-	 * @type {string}
 	 */
-	static tempFolderPathPrefix = path.join(os.tmpdir(), `${path.sep}lommus-`);
+	static tempFolderPathPrefix: fs.PathLike = path.join(os.tmpdir(), `${path.sep}lommus-`);
 
 	/**
 	 * Set of temporary files tracked
-	 *
-	 * @static
-	 * @type {Set<string>}
 	 */
-	static tempFiles = new Set();
+	static tempFiles: Set<string> = new Set();
 
 	/**
 	 * The temp folder path
@@ -46,19 +40,19 @@ export default class FileManagerModule extends BotModule {
 	/**
 	 * Scary
 	 *
-	 * @param {string} [prefix=FileManagerModule.tempFolderPathPrefix]
+	 * @param prefix
 	 */
-	#cleanTempDirectory(prefix = FileManagerModule.tempFolderPathPrefix) {
+	#cleanTempDirectory(prefix: fs.PathLike = FileManagerModule.tempFolderPathPrefix) {
 		exec(`rm -r ${prefix}*`);
 	}
 
 	/**
 	 * Creates a temporary directory
 	 *
-	 * @param {string} [prefix=FileManagerModule.tempFolderPathPrefix] The name of the directory
+	 * @param prefix The name of the directory
 	 */
-	#createTempDirectory(prefix = FileManagerModule.tempFolderPathPrefix) {
-		fs.mkdtemp(prefix, (err, folder) => {
+	#createTempDirectory(prefix: fs.PathLike = FileManagerModule.tempFolderPathPrefix) {
+		fs.mkdtemp(prefix.toString(), (err, folder) => {
 			if (err) throw new Error(`Error while creating temporary folder: ${err}`);
 			FileManagerModule.tempFolderPath = folder;
 		});
@@ -82,8 +76,8 @@ export default class FileManagerModule extends BotModule {
 			stream.on('error', reject);
 			stream.on('finish', resolve);
 
-			/** The remaining data not covered by the chunk @type {string} */
-			let remainder = "";
+			/** The remaining data not covered by the chunk */
+			let remainder: string = "";
 
 			for (let i = 0; i < b64.length; i += chunkSize) {
 				/** The particular chunk this iteration */

@@ -12,9 +12,8 @@ console.log("LoMMuS is initializing...");
 class LoMMuS {
 	/**
 	 * The client class instantiated and cached
-	 * @type {Client}
 	 */
-	client = new Client({
+	client: Client = new Client({
 		intents: [
 			GatewayIntentBits.Guilds,
 			GatewayIntentBits.GuildMembers,
@@ -33,10 +32,8 @@ class LoMMuS {
 
 	/**
 	 * Has the client finished doing module loading?
-	 *
-	 * @type {boolean}
 	 */
-	_isModuleLoadingDone = false;
+	_isModuleLoadingDone: boolean = false;
 
 	/** Array of module names that have been loaded and registered */
 	registeredModules = new Set<BotModule>();
@@ -44,7 +41,7 @@ class LoMMuS {
 	/**
 	 * Initializes LoMMuS and logs in
 	 *
-	 * @param {string} token The bot token
+	 * @param token The bot token
 	 */
 	constructor(token: string) {
 		console.log("Instantiating LoMMuS...");

@@ -5,10 +5,8 @@ import { config } from './util/config.mjs';
 export default class LomboardModule extends BotModule {
 	/**
 	 * The emoji ID used for starring messages
-	 *
-	 * @type {string}
 	 */
-	starEmojiId = '1194451869829967952';
+	starEmojiId: string = '1194451869829967952';
 
 
 	/**
@@ -18,20 +16,16 @@ export default class LomboardModule extends BotModule {
 
 	/**
 	 * The `#lomboard` channel ID
-	 *
-	 * @type {string}
 	 */
-	lomboardChannelId = '1074109666730197083';
+	lomboardChannelId: string = '1074109666730197083';
 
 	/** The `#lomboard` channel */
 	lomboardChannel: TextChannel;
 
 	/**
 	 * Number of reactions needed to get to the Lomboard
-	 *
-	 * @type {number}
 	 */
-	reactionsNeeded = config.lomboardReactionLimit;
+	reactionsNeeded: number = config.lomboardReactionLimit;
 
 	/**
 	 * Creates an instance of LomboardModule.

@@ -5,10 +5,8 @@ import { BotModule } from './util/module.mjs';
 export default class InfoEmbedModule extends BotModule {
 	/**
 	 * List of rules from the JSON file
-	 *
-	 * @type {*}
 	 */
-	rulelist = JSON.parse(fs.readFileSync('./data/rules.json', { 'encoding': 'utf-8' }));
+	rulelist: Record<string, Record<string, string>> = JSON.parse(fs.readFileSync('./data/rules.json', { 'encoding': 'utf-8' }));
 
 	/**
 	 * Creates an instance of InfoEmbedModule.
