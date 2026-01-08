@@ -24,4 +24,4 @@ The bot uses standard NodeJS APIs and is intended to run normally everywhere usi
 
 ### TypeScript
 
-This repository uses TypeScript's type hinting features to ease development. However, please do not use TypeScript code.
+This repository uses TypeScript :D
