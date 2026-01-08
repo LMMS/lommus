@@ -8,7 +8,12 @@ const commands = [
 	// dump
 	new SlashCommandBuilder()
 		.setName('dump')
-		.setDescription('Dumps info about the bot'),
+		.setDescription('Dumps info about the bot')
+		.addBooleanOption((option) =>
+			option
+				.setName('post')
+				.setDescription('publicly post this?')
+		),
 
 	new SlashCommandBuilder()
 		.setName('file')
@@ -48,9 +53,9 @@ const commands = [
 		.setName('restart')
 		.setDescription('Bippidy Boppidy Ska'),
 
-	new SlashCommandBuilder()
-		.setName('reload')
-		.setDescription('Reloads all of the bot\'s modules'),
+	// new SlashCommandBuilder()
+	// 	.setName('reload')
+	// 	.setDescription('Reloads all of the bot\'s modules'),
 
 	// kill bot
 	new SlashCommandBuilder()
