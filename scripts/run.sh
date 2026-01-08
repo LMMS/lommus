@@ -10,6 +10,7 @@ pm2 set pm2-logrotate:rotateInterval '0 0 * * *' # At 00:00, every day
 pm2 restart pm2-logrotate
 
 pm2 start lommus.ts \
+	--interpreter=bun \
   --name="LoMMuS" \
   --node-args="--enable-source-maps --trace-warnings --trace-deprecation" \
   --stop-exit-codes=0
