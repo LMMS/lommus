@@ -13,9 +13,9 @@
     "types": [
       "node"
     ],
-    // we only want typechecking
     "allowJs": true,
     "checkJs": true,
+		"allowImportingTsExtensions": true,
     // no need to emit anything
     "noEmit": true,
     // running with node, we can read json files
