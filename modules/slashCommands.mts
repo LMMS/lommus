@@ -1,19 +1,14 @@
 import { BotModule } from './util/module.mjs';
-import { ChannelType, ChatInputCommandInteraction, Client, CommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, PermissionsBitField, TextChannel, time, type CacheType } from 'discord.js';
+import { ChannelType, Client, CommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, PermissionsBitField, TextChannel, time, type CacheType } from 'discord.js';
 import { config } from './util/config.mjs';
 import { formatBytes } from 'bytes-formatter';
 import { getGitHubFile } from './util/githubApi.mjs';
 import { LOMMUS } from '../lommus.js';
 import { readFile } from 'node:fs/promises';
-import os from 'node:os'
+import os from 'node:os';
 
-type CommandObject = Readonly<
-	Record<string, {
-		perms: bigint
-		bypassUserIds: string[]
-		handler: (interaction: ChatInputCommandInteraction<CacheType>) => any
-	}>
->
+import type { CommandObject } from './util/globals.mts'
+
 
 export default class SlashCommandsModule extends BotModule {
 	/** The #logs channel ID */
@@ -22,144 +17,7 @@ export default class SlashCommandsModule extends BotModule {
 	/** The #logs channel */
 	logsChannel: TextChannel;
 
-	/**
-	 * Creates an instance of SlashCommandsModule.
-	 *
-	 * @constructor
-	 */
-	constructor(client: Client) {
-		super(
-			client,
-			"Slash Commands",
-			"Event handlers for slash commands"
-		);
-
-		this.logsChannel = this.client.channels.cache.get(this.logsChannelId) as TextChannel;
-		if (this.logsChannel?.partial) this.logsChannel.fetch();
-	}
-
-	/**
-	 * Checks whether the user has proper permissions, or is of the configured ID
-	 *
-	 * @param interaction The interaction to pass
-	 * @param bits The permission bits to check
-	 * @param id The user ID to check
-	 * @returns {boolean}
-	 */
-	private checkPerms(interaction: CommandInteraction<CacheType>, bits: PermissionsBitField, id: string): boolean {
-		return (interaction.memberPermissions?.has(bits) ?? false) || (interaction.user.id === id);
-	}
-
-	/**
-	 * Rejects a given command interaction
-	 *
-	 * @param interaction The interaction to pass here
-	 */
-	private async rejectUnprivilegedCommand(interaction: CommandInteraction<CacheType>) {
-		const { id, globalName, username } = interaction.user;
-
-		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
-
-		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
-	}
-
-	private commandList: CommandObject = Object.freeze({
-		"restart": {
-			perms: PermissionFlagsBits.BanMembers,
-			bypassUserIds: [config.ownerId],
-			handler: async (interaction) => {
-				console.log("Restarting...");
-
-				if (!interaction.channel || !interaction.guild) return;
-
-				const embed = new EmbedBuilder()
-					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-					.setColor(this.colors.RED)
-					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
-
-				// if we can reply, do it
-				// if not, leave it be
-				if (interaction.isRepliable()) await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-
-				return setTimeout(() => process.exit(1), 1000);
-			}
-		},
-		"say": {
-			perms: PermissionFlagsBits.KickMembers,
-			bypassUserIds: [config.ownerId],
-			handler: async (interaction) => {
-				if (
-					!interaction.channel?.isSendable()
-					|| !interaction.isRepliable()
-				) return;
-
-				const options = {
-					msg: interaction.options.getString('message', true),
-					channel: interaction.options.getChannel('channel', false) ?? interaction.channel
-				};
-
-				if (
-					options.channel.type !== ChannelType.GuildText
-					// @ts-ignore
-					|| !options.channel?.isSendable()
-				) return await interaction.reply({
-					content: "I can't send messages in that channel",
-					flags: MessageFlags.Ephemeral
-				});
-
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-				// @ts-expect-error
-				await options.channel.send(options.msg);
-
-				return interaction.deleteReply();
-			}
-		},
-		"toggle": {
-			perms: PermissionFlagsBits.Administrator,
-			bypassUserIds: [config.ownerId],
-			handler: async (interaction) => {
-				if (!interaction.isChatInputCommand()) return;
-
-				const toggleType = interaction.options.getString('function');
-
-				// noop for now
-				return;
-			}
-		},
-		"kill": {
-			perms: PermissionFlagsBits.BanMembers,
-			bypassUserIds: [config.ownerId],
-			handler: async (interaction) => {
-				console.log("Killing bot...");
-				if (!interaction.isChatInputCommand()) return;
-
-				const embed = new EmbedBuilder()
-					.setAuthor({ name: 'Exiting bot', iconURL: (interaction.guild) ? interaction.guild.iconURL({ size: 64 }) ?? "" : "" })
-					.setColor(this.colors.RED)
-					.setDescription('Goodbye world.');
-
-				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-
-				return setTimeout(() => process.exit(0), 10);
-			}
-		},
-		"reload": {
-			perms: PermissionFlagsBits.KickMembers,
-			bypassUserIds: [config.ownerId],
-			handler: async (interaction) => {
-				console.log("Reloading modules...");
-
-				const embed = new EmbedBuilder()
-					.setTitle('Reloading modules')
-					.setColor(this.colors.GRAY)
-					.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
-
-				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-
-				await LOMMUS.loadESModules();
-			}
-		},
+	private userCommands: CommandObject = Object.freeze({
 		"whois": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
@@ -391,7 +249,150 @@ export default class SlashCommandsModule extends BotModule {
 				return interaction.reply({ embeds: [embed] });
 			}
 		}
-	})
+	});
+
+	/**
+	 * Creates an instance of SlashCommandsModule.
+	 *
+	 * @constructor
+	 */
+	constructor(client: Client) {
+		super(
+			client,
+			"Slash Commands",
+			"Event handlers for slash commands"
+		);
+
+		this.logsChannel = this.client.channels.cache.get(this.logsChannelId) as TextChannel;
+		if (this.logsChannel?.partial) this.logsChannel.fetch();
+	}
+
+	/**
+	 * Checks whether the user has proper permissions, or is of the configured ID
+	 *
+	 * @param interaction The interaction to pass
+	 * @param bits The permission bits to check
+	 * @param id The user ID to check
+	 * @returns {boolean}
+	 */
+	private checkPerms(interaction: CommandInteraction<CacheType>, bits: PermissionsBitField, id: string): boolean {
+		return (interaction.memberPermissions?.has(bits) ?? false) || (interaction.user.id === id);
+	}
+
+	/**
+	 * Rejects a given command interaction
+	 *
+	 * @param interaction The interaction to pass here
+	 */
+	private async rejectUnprivilegedCommand(interaction: CommandInteraction<CacheType>) {
+		const { id, globalName, username } = interaction.user;
+
+		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+
+		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
+	}
+
+	private commandList: CommandObject = Object.freeze(Object.assign(
+		{
+			"restart": {
+				perms: PermissionFlagsBits.BanMembers,
+				bypassUserIds: [config.ownerId],
+				handler: async (interaction) => {
+					console.log("Restarting...");
+
+					if (!interaction.channel || !interaction.guild) return;
+
+					const embed = new EmbedBuilder()
+						.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+						.setColor(this.colors.RED)
+						.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
+
+					// if we can reply, do it
+					// if not, leave it be
+					if (interaction.isRepliable()) await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+					return setTimeout(() => process.exit(1), 1000);
+				}
+			},
+			"say": {
+				perms: PermissionFlagsBits.KickMembers,
+				bypassUserIds: [config.ownerId],
+				handler: async (interaction) => {
+					if (
+						!interaction.channel?.isSendable()
+						|| !interaction.isRepliable()
+					) return;
+
+					const options = {
+						msg: interaction.options.getString('message', true),
+						channel: interaction.options.getChannel('channel', false) ?? interaction.channel
+					};
+
+					if (
+						options.channel.type !== ChannelType.GuildText
+						// @ts-ignore
+						|| !options.channel?.isSendable()
+					) return await interaction.reply({
+						content: "I can't send messages in that channel",
+						flags: MessageFlags.Ephemeral
+					});
+
+					await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+					// @ts-expect-error
+					await options.channel.send(options.msg);
+
+					return interaction.deleteReply();
+				}
+			},
+			"toggle": {
+				perms: PermissionFlagsBits.Administrator,
+				bypassUserIds: [config.ownerId],
+				handler: async (interaction) => {
+					if (!interaction.isChatInputCommand()) return;
+
+					const toggleType = interaction.options.getString('function');
+
+					// noop for now
+					return;
+				}
+			},
+			"kill": {
+				perms: PermissionFlagsBits.BanMembers,
+				bypassUserIds: [config.ownerId],
+				handler: async (interaction) => {
+					console.log("Killing bot...");
+					if (!interaction.isChatInputCommand()) return;
+
+					const embed = new EmbedBuilder()
+						.setAuthor({ name: 'Exiting bot', iconURL: (interaction.guild) ? interaction.guild.iconURL({ size: 64 }) ?? "" : "" })
+						.setColor(this.colors.RED)
+						.setDescription('Goodbye world.');
+
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+					return setTimeout(() => process.exit(0), 10);
+				}
+			},
+			"reload": {
+				perms: PermissionFlagsBits.KickMembers,
+				bypassUserIds: [config.ownerId],
+				handler: async (interaction) => {
+					console.log("Reloading modules...");
+
+					const embed = new EmbedBuilder()
+						.setTitle('Reloading modules')
+						.setColor(this.colors.GRAY)
+						.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
+
+					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+					await LOMMUS.loadESModules();
+				}
+			},
+		},
+		this.userCommands
+	))
 
 	init() {
 		this.client.on(Events.InteractionCreate, async (interaction) => {
@@ -402,7 +403,6 @@ export default class SlashCommandsModule extends BotModule {
 
 			// Screen bad command interactions
 			if (!interaction.isChatInputCommand()) return;
-
 
 			const cmd = this.commandList[interaction.commandName];
 			if (!cmd) return;
