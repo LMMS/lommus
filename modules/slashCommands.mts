@@ -388,7 +388,7 @@ export default class SlashCommandsModule extends BotModule {
 	 *
 	 * @private
 	 */
-	private commandList = Object.freeze(Object.assign<CommandObject, CommandObject>(
+	private commandList = Object.freeze(Object.assign<CommandObject, CommandObject, CommandObject>(
 		{
 			/** Say something as the bot */
 			"say": {
