@@ -17,7 +17,55 @@ export default class SlashCommandsModule extends BotModule {
 	/** The #logs channel */
 	logsChannel: TextChannel;
 
+	/**
+	 * Creates an instance of SlashCommandsModule.
+	 *
+	 * @constructor
+	 */
+	constructor(client: Client) {
+		super(
+			client,
+			"Slash Commands",
+			"Event handlers for slash commands"
+		);
+
+		// Precheck logs channel
+		this.logsChannel = this.client.channels.cache.get(this.logsChannelId) as TextChannel;
+		if (this.logsChannel?.partial) this.logsChannel.fetch();
+	}
+
+	/**
+	 * Checks whether the user has proper permissions, or is of the configured ID
+	 *
+	 * @param interaction The interaction to pass
+	 * @param bits The permission bits to check
+	 * @param id The user ID to check
+	 * @returns {boolean}
+	 */
+	private checkPerms(interaction: CommandInteraction<CacheType>, bits: PermissionsBitField, id: string): boolean {
+		return (interaction.memberPermissions?.has(bits) ?? false) || (interaction.user.id === id);
+	}
+
+	/**
+	 * Rejects a given command interaction
+	 *
+	 * @param interaction The interaction to pass here
+	 */
+	private async rejectUnprivilegedCommand(interaction: CommandInteraction<CacheType>) {
+		const { id, globalName, username } = interaction.user;
+
+		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+
+		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
+	}
+
+	/**
+	 * Unprivileged user commands
+	 *
+	 * @private
+	 */
 	private userCommands: CommandObject = Object.freeze({
+		/** Get info about the given user */
 		"whois": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
@@ -60,6 +108,7 @@ export default class SlashCommandsModule extends BotModule {
 				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 		},
+		/** Get info about the server itself */
 		"server": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
@@ -92,6 +141,7 @@ export default class SlashCommandsModule extends BotModule {
 				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 		},
+		/** Get info about the bot itself */
 		"bot": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
@@ -107,6 +157,7 @@ export default class SlashCommandsModule extends BotModule {
 				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 			}
 		},
+		/** Get and post the channel's topic */
 		"topic": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
@@ -120,56 +171,7 @@ export default class SlashCommandsModule extends BotModule {
 				return await interaction.reply({ embeds: [embed] });
 			}
 		},
-		"dump": {
-			perms: PermissionFlagsBits.KickMembers,
-			bypassUserIds: [config.ownerId],
-			handler: async (interaction) => {
-				const loadedLOMMUSModules = Array.from(LOMMUS.registeredModules)
-					.map((mod, i) => `${i + 1}. \`${mod.name}\`: *${mod.description}*`)
-					.join('\n');
-
-				const LOMMUSIntents = LOMMUS.client.options.intents
-					.toArray()
-					.map((intent, i) => `${i + 1}. \`${intent}\``)
-					.join('\n');
-
-				const embed = new EmbedBuilder()
-					.addFields([
-						{
-							name: 'Environment', value: `
-* Interpreter name (reported): \`${process.release.name}\`
-* Interpreter version: \`${process.version}\`
-* Machine name: \`${os.hostname()}\`
-* Machine OS: \`${os.type()}\`
-* Machine version: \`${os.release()}\`
-							`.trim(),
-							inline: true
-						},
-						{ name: 'Intents', value: LOMMUSIntents, inline: true },
-						{ name: 'Loaded modules', value: loadedLOMMUSModules },
-					])
-					.setAuthor({ name: `${new Date().toISOString()}` })
-					.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
-
-				if (interaction.options.getBoolean('post', false)) return await interaction.reply({ embeds: [embed] });
-				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-			}
-		},
-		"ping": {
-			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
-			handler: async (interaction) => {
-				const pingReceivedTime = Date.now();
-
-				if (interaction.isRepliable()) try {
-					interaction.reply('Measuring...').then(async (msg) => {
-						await msg.edit(`:ping_pong: Pong \`${pingReceivedTime - msg.createdTimestamp}\`ms\nAPI latency: \`${this.client.ws.ping}\`ms\nTotal latency: \`${this.client.ws.ping + (pingReceivedTime - msg.createdTimestamp)}\`ms`);
-					});
-				} catch (error) {
-					await interaction.reply('Failed to get ping data');
-				}
-			}
-		},
+		/** Post info and the link to nightly builds */
 		"nightly": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
@@ -187,6 +189,7 @@ export default class SlashCommandsModule extends BotModule {
 				await interaction.deleteReply();
 			}
 		},
+		/** Get info and snapshot of a file */
 		"file": {
 			perms: PermissionFlagsBits.SendMessages,
 			bypassUserIds: [config.ownerId],
@@ -252,68 +255,142 @@ export default class SlashCommandsModule extends BotModule {
 	});
 
 	/**
-	 * Creates an instance of SlashCommandsModule.
+	 * Commands used for debugging and maintenance
 	 *
-	 * @constructor
+	 * @private
 	 */
-	constructor(client: Client) {
-		super(
-			client,
-			"Slash Commands",
-			"Event handlers for slash commands"
-		);
+	private debugCommands: CommandObject = Object.freeze({
+		/** Dumps a lot of info abou the bot */
+		"dump": {
+			perms: PermissionFlagsBits.KickMembers,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				const loadedLOMMUSModules = Array.from(LOMMUS.registeredModules)
+					.map((mod, i) => `${i + 1}. \`${mod.name}\`: *${mod.description}*`)
+					.join('\n');
 
-		this.logsChannel = this.client.channels.cache.get(this.logsChannelId) as TextChannel;
-		if (this.logsChannel?.partial) this.logsChannel.fetch();
-	}
+				const LOMMUSIntents = LOMMUS.client.options.intents
+					.toArray()
+					.map((intent, i) => `${i + 1}. \`${intent}\``)
+					.join('\n');
 
-	/**
-	 * Checks whether the user has proper permissions, or is of the configured ID
-	 *
-	 * @param interaction The interaction to pass
-	 * @param bits The permission bits to check
-	 * @param id The user ID to check
-	 * @returns {boolean}
-	 */
-	private checkPerms(interaction: CommandInteraction<CacheType>, bits: PermissionsBitField, id: string): boolean {
-		return (interaction.memberPermissions?.has(bits) ?? false) || (interaction.user.id === id);
-	}
+				const embed = new EmbedBuilder()
+					.addFields([
+						{
+							name: 'Environment', value: `
+* Interpreter name (reported): \`${process.release.name}\`
+* Interpreter version: \`${process.version}\`
+* Machine name: \`${os.hostname()}\`
+* Machine OS: \`${os.type()}\`
+* Machine version: \`${os.release()}\`
+							`.trim(),
+							inline: true
+						},
+						{ name: 'Intents', value: LOMMUSIntents, inline: true },
+						{ name: 'Loaded modules', value: loadedLOMMUSModules },
+					])
+					.setAuthor({ name: `${new Date().toISOString()}` })
+					.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
 
-	/**
-	 * Rejects a given command interaction
-	 *
-	 * @param interaction The interaction to pass here
-	 */
-	private async rejectUnprivilegedCommand(interaction: CommandInteraction<CacheType>) {
-		const { id, globalName, username } = interaction.user;
+				if (interaction.options.getBoolean('post', false)) return await interaction.reply({ embeds: [embed] });
+				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+			}
+		},
+		/** Ping the bot */
+		"ping": {
+			perms: PermissionFlagsBits.SendMessages,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				const pingReceivedTime = Date.now();
 
-		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
-
-		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
-	}
-
-	private commandList: CommandObject = Object.freeze(Object.assign(
-		{
-			"restart": {
-				perms: PermissionFlagsBits.BanMembers,
-				bypassUserIds: [config.ownerId],
-				handler: async (interaction) => {
-					console.log("Restarting...");
-
-					if (!interaction.channel || !interaction.guild) return;
-
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
-						.setColor(this.colors.RED)
-						.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
-
-					// if we can reply, do it
-					// if not, leave it be
-					if (interaction.isRepliable()) await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-
-					return setTimeout(() => process.exit(1), 1000);
+				if (interaction.isRepliable()) try {
+					interaction.reply('Measuring...').then(async (msg) => {
+						await msg.edit(`:ping_pong: Pong \`${pingReceivedTime - msg.createdTimestamp}\`ms\nAPI latency: \`${this.client.ws.ping}\`ms\nTotal latency: \`${this.client.ws.ping + (pingReceivedTime - msg.createdTimestamp)}\`ms`);
+					});
+				} catch (error) {
+					await interaction.reply('Failed to get ping data');
 				}
-			},
+			}
+		},
+		/** Toggle a feature on/off. Currently noop */
+		"toggle": {
+			perms: PermissionFlagsBits.Administrator,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				if (!interaction.isChatInputCommand()) return;
+
+				const toggleType = interaction.options.getString('function');
+
+				// noop
+				return;
+			}
+		},
+		/** Kill the bot, don't revive */
+		"kill": {
+			perms: PermissionFlagsBits.BanMembers,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				console.log("Killing bot...");
+				if (!interaction.isChatInputCommand()) return;
+
+				const embed = new EmbedBuilder()
+					.setAuthor({ name: 'Exiting bot', iconURL: (interaction.guild) ? interaction.guild.iconURL({ size: 64 }) ?? "" : "" })
+					.setColor(this.colors.RED)
+					.setDescription('Goodbye world.');
+
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+				return setTimeout(() => process.exit(0), 10);
+			}
+		},
+		/** Reloads all modules. Unviable until event registration refactor */
+		"reload": {
+			perms: PermissionFlagsBits.KickMembers,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				console.log("Reloading modules...");
+
+				const embed = new EmbedBuilder()
+					.setTitle('Reloading modules')
+					.setColor(this.colors.GRAY)
+					.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
+
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+				await LOMMUS.loadESModules();
+			}
+		},
+		/** Kill the bot, then revive it */
+		"restart": {
+			perms: PermissionFlagsBits.BanMembers,
+			bypassUserIds: [config.ownerId],
+			handler: async (interaction) => {
+				console.log("Restarting...");
+
+				if (!interaction.channel || !interaction.guild) return;
+
+				const embed = new EmbedBuilder()
+					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
+					.setColor(this.colors.RED)
+					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
+
+				// if we can reply, do it
+				// if not, leave it be
+				if (interaction.isRepliable()) await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+				return setTimeout(() => process.exit(1), 1000);
+			}
+		},
+	})
+
+	/**
+	 * Every command merged into one frozen dictionary
+	 *
+	 * @private
+	 */
+	private commandList = Object.freeze(Object.assign<CommandObject, CommandObject>(
+		{
+			/** Say something as the bot */
 			"say": {
 				perms: PermissionFlagsBits.KickMembers,
 				bypassUserIds: [config.ownerId],
@@ -345,61 +422,19 @@ export default class SlashCommandsModule extends BotModule {
 					return interaction.deleteReply();
 				}
 			},
-			"toggle": {
-				perms: PermissionFlagsBits.Administrator,
-				bypassUserIds: [config.ownerId],
-				handler: async (interaction) => {
-					if (!interaction.isChatInputCommand()) return;
-
-					const toggleType = interaction.options.getString('function');
-
-					// noop for now
-					return;
-				}
-			},
-			"kill": {
-				perms: PermissionFlagsBits.BanMembers,
-				bypassUserIds: [config.ownerId],
-				handler: async (interaction) => {
-					console.log("Killing bot...");
-					if (!interaction.isChatInputCommand()) return;
-
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: 'Exiting bot', iconURL: (interaction.guild) ? interaction.guild.iconURL({ size: 64 }) ?? "" : "" })
-						.setColor(this.colors.RED)
-						.setDescription('Goodbye world.');
-
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-
-					return setTimeout(() => process.exit(0), 10);
-				}
-			},
-			"reload": {
-				perms: PermissionFlagsBits.KickMembers,
-				bypassUserIds: [config.ownerId],
-				handler: async (interaction) => {
-					console.log("Reloading modules...");
-
-					const embed = new EmbedBuilder()
-						.setTitle('Reloading modules')
-						.setColor(this.colors.GRAY)
-						.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
-
-					await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-
-					await LOMMUS.loadESModules();
-				}
-			},
 		},
-		this.userCommands
+		this.userCommands,
+		this.debugCommands
 	))
 
 	init() {
 		this.client.on(Events.InteractionCreate, async (interaction) => {
-			if (!interaction || !interaction.channel || !interaction.guild) {
-				console.error("Interaction is not configured correctly! Has slash commands been registered yet?");
-				return;
-			}
+			// explicitly throw, as something is definitely not right
+			if (
+				!interaction
+				|| !interaction.channel
+				|| !interaction.guild
+			) throw new Error("Interaction is not configured correctly! Has slash commands been registered yet?");
 
 			// Screen bad command interactions
 			if (!interaction.isChatInputCommand()) return;
@@ -407,11 +442,13 @@ export default class SlashCommandsModule extends BotModule {
 			const cmd = this.commandList[interaction.commandName];
 			if (!cmd) return;
 
-			if (interaction.memberPermissions?.has(cmd.perms) || cmd.bypassUserIds.includes(interaction.user.id)) {
+			// check perms
+			if (
+				interaction.memberPermissions?.has(cmd.perms)
+				|| cmd.bypassUserIds.includes(interaction.user.id)
+			) {
 				cmd.handler(interaction);
-			} else {
-				this.rejectUnprivilegedCommand(interaction);
-			};
+			} else this.rejectUnprivilegedCommand(interaction);
 		});
 	}
 }
