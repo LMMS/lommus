@@ -142,7 +142,7 @@ class LoMMuS {
 }
 
 // async error handling
-process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error));
+process.on('unhandledRejection', (error) => console.error('Uncaught Promise rejection:\n', error, 'This is usually recoverable'));
 
 // process crash handling
 process.on('uncaughtException', (error) => {
