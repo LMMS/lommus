@@ -9,5 +9,8 @@ pm2 restart pm2-logrotate
 pm2 start lommus.ts `
 	--interpeter=bun `
 	--name="LoMMuS" `
+	--max-memory-restart=300M `
+  --min-uptime=30s `
+  --max-restarts=50 `
 	--node-args="--enable-source-maps --trace-warnings --trace-deprecation" `
 	--stop-exit-codes=0
