@@ -4,8 +4,7 @@
 	"npm.scriptRunner": "bun",
 
 	// style options
-	"javascript.preferences.quoteStyle": "single",
-	"editor.tabSize": 2,
+	"editor.tabSize": 4,
 	"editor.detectIndentation": false,
 	"editor.insertSpaces": false
 }
