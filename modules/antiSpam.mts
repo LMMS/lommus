@@ -1,7 +1,7 @@
-import { blockQuote, Client, EmbedBuilder, Events, Message, PermissionFlagsBits,type ColorResolvable } from 'discord.js';
-import { BotModule } from './util/module.mjs';
-import badURLs from '../data/spam.json' with { type: 'json' };
-import { config } from './util/config.mjs';
+import { Client, Events, Message, PermissionFlagsBits, EmbedBuilder, blockQuote, TextChannel } from 'discord.js'
+import { BotModule } from './util/module.mjs'
+import badURLs from '../data/spam.json' with { type: 'json' }
+import { config } from './util/config.mjs'
 
 export default class AntiSpamModule extends BotModule {
 	/**
@@ -29,12 +29,11 @@ export default class AntiSpamModule extends BotModule {
 	 * @readonly
 	 */
 	spamCheckMask = Object.freeze({
-		STAFF: 0,
-		EVERYONE_PING: 1 << 0,
-		URL: 1 << 1,
-		SPAM_DOMAIN: 1 << 2,
-		// future usage
-		// SLUR: 1 << 3
+		NONE: 0,
+		STAFF: 1 << 0,
+		EVERYONE_PING: 1 << 1,
+		URL: 1 << 2,
+		SPAM_DOMAIN: 1 << 3,
 	});
 
 	/**
@@ -47,7 +46,7 @@ export default class AntiSpamModule extends BotModule {
 			client,
 			"Anti Spam",
 			"we're vegetarians"
-		);
+		)
 	}
 
 
@@ -62,7 +61,7 @@ export default class AntiSpamModule extends BotModule {
 			String(text)
 				.toLowerCase()
 				.includes(String(el).toLowerCase())
-		);
+		)
 	}
 
 	/**
@@ -76,7 +75,7 @@ export default class AntiSpamModule extends BotModule {
 			String(text)
 				.toLowerCase()
 				.includes(String(el).toLowerCase())
-		);
+		)
 	}
 
 	/**
@@ -85,91 +84,54 @@ export default class AntiSpamModule extends BotModule {
 	 * @param message The message to check
 	 * @returns A number based off of `AntiSpamModule.spamCheckMask`'s members
 	 */
-	spamCheck(message: Message): number | void {
-		if (!message.member) return;
-		if (message.author?.bot) return;
+	spamCheck(message: Message): number {
+		if (!message.member) return this.spamCheckMask.NONE
+		if (message.author?.bot) return this.spamCheckMask.NONE
 
-		// Exit on staff
-		if (message.member.permissions.has(PermissionFlagsBits.KickMembers)) return;
+		// If staff, return
+		if (message.author.id === config.ownerId.toString()) return this.spamCheckMask.NONE
+		if (message.member.permissions.has(PermissionFlagsBits.KickMembers)) return this.spamCheckMask.NONE
 
 		// @everyone and URL check
-		if (message.mentions.everyone && this.urlReg.test(message.content)) return (this.spamCheckMask.EVERYONE_PING | this.spamCheckMask.URL);
-
-		// Bad domain JSON array check
 		if (
-			badURLs.some((filter) =>
-				message.content
-					.toLowerCase()
-					.includes(String(filter).toLowerCase()))
-		) return this.spamCheckMask.SPAM_DOMAIN;
+			message.mentions.everyone
+			&& this.urlReg.test(message.content)
+		) return (this.spamCheckMask.EVERYONE_PING | this.spamCheckMask.URL)
 
-		// Old hardcoded check
-		if (
-			this.urlReg.test(`${message.content}`) && (
-				this.multiSearchOr(message.content.toLowerCase(), ['disccrd', 'discond', 'discordcd', 'discorde', 'dlsccord', 'disorde', 'discrod'])
-				|| this.multiSearchAnd(message.content.toLowerCase(), ['nitro', 'discord', 'steam'])
-				|| this.multiSearchAnd(message.content.toLowerCase(), ['nitro', 'discord', 'gift'])
-				|| this.multiSearchAnd(message.content.toLowerCase(), ['nitro', 'discord', 'month'])
-				|| this.multiSearchAnd(message.content.toLowerCase(), ['nitro', 'discord', 'free'])
-			)
-		) {
-			return this.spamCheckMask.SPAM_DOMAIN;
-		}
-
-		// if all fails, just explicitly return. shuts up typescript
-		return;
+		return this.spamCheckMask.NONE
 	}
 
 	init() {
 		this.client.on(Events.MessageCreate, async (message) => {
-			const evidenceChannel = message.guild?.channels.cache.get(this.evidenceChannelId);
-			const modChannel = message.guild?.channels.cache.get(this.modChannelId);
+			const evidenceChannel = this.client.channels.cache.get(this.evidenceChannelId) as TextChannel
+			const modChannel = this.client.channels.cache.get(this.modChannelId) as TextChannel
 
-			const spamType = this.spamCheck(message);
+			const spamCheckResult = this.spamCheck(message)
 
-			if (spamType) {
-				try {
-					await message.delete();
-				} catch (error) {
-					console.error("Failed to delete message", error);
-				}
+			if (spamCheckResult === this.spamCheckMask.NONE) return
 
-				// timeout for 1 day
-				try {
-					if (!message.member) { console.warn("Member cannot be found from message, is it possible that they've exited?"); return; };
-
-					// make sure not to mute the dev
-					if (message.member.id !== config.ownerId) await message.member.timeout(86_400_000);
-				} catch (error) {
-					console.error("Attempted to mute member and failed", error);
-				}
-
-				// snitch to #evidence
-				const evidenceEmbed = new EmbedBuilder()
-					.setColor(this.colors.GRAY)
-					.setAuthor({
-						name: `Spam Logged (#${('name' in message.channel) ? message.channel.name : 'Unknown channel name'})`,
-						iconURL: (message.guild) ? message.guild.iconURL({ size: 64 }) ?? '' : ''
-					})
-					.setTimestamp(new Date())
-					.setFooter({
-						text: `Member: ${message.author.id}`
-					})
-					.setFields([
-						{ name: 'Offender', value: `${message.author.tag} ${message.author}`, inline: true },
-						{ name: 'Type', value: String(spamType), inline: true },
-						{ name: 'Message', value: blockQuote(message.cleanContent) }
-					]);
-
-				if (evidenceChannel?.isSendable()) await evidenceChannel.send({ embeds: [evidenceEmbed] });
-
-				// snitch to #mod
-				const modEmbed = new EmbedBuilder()
-					.setColor(this.colors.RED)
-					.setDescription(`${message.author} (${message.author.tag}) triggered spam function (${spamType}).`);
-
-				if (modChannel?.isSendable()) await modChannel.send({ embeds: [modEmbed] });
+			try {
+				await message.delete()
+			} catch (error) {
+				console.error("Failed to delete message", error)
 			}
-		});
+
+			const evidenceEmbed = new EmbedBuilder()
+				.setColor(this.colors.GRAY)
+				.setAuthor({
+					name: `Spam Logged (#${('name' in message.channel) ? message.channel.name : 'Unknown channel name'})`
+				})
+				.setTimestamp(new Date())
+				.setFooter({
+					text: `Member: ${message.author.id}`
+				})
+				.setFields([
+					{ name: 'Offender', value: `${message.author.tag} ${message.author}`, inline: true },
+					{ name: 'Type', value: String(spamCheckResult), inline: true },
+					{ name: 'Message', value: blockQuote(message.cleanContent) }
+				])
+
+			await evidenceChannel.send({ embeds: [evidenceEmbed] })
+		})
 	}
 }
