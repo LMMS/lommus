@@ -1,5 +1,3 @@
-import * as dotenv from 'dotenv';
-dotenv.config({ quiet: true });
 import { SlashCommandBuilder, PermissionFlagsBits, Routes, REST } from 'discord.js';
 import { config } from './modules/util/config.mjs';
 

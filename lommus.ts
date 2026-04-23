@@ -1,7 +1,5 @@
 import fs from 'node:fs';
 
-import * as dotenv from 'dotenv';
-dotenv.config({ quiet: true });
 import { ActivityType, Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { config } from './modules/util/config.mjs';
 import { THROW_REASONS } from './modules/util/globals.mjs';
