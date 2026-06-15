@@ -10,7 +10,7 @@
     "bytes-formatter": "21.6.15",
     "discord.js": "14.26.3",
     "lzma": "2.3.2",
-    "pm2": "6.0.14"
+    "pm2": "7.0.1"
   },
   "bugs": {
     "url": "https://github.com/lmms/lommus/issues"
