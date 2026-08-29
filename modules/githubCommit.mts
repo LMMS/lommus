@@ -9,6 +9,9 @@ type GitHubAPIResponse = {
 	}
 	commit: {
 		message: string
+		author: {
+			name: string
+		}
 		committer: {
 			name: string
 			date: string
@@ -77,7 +80,7 @@ export default class extends BotModule {
 
 					const data = await response.json() as GitHubAPIResponse
 
-					output.push(`[${data.commit.committer.date} - [${data.commit.committer.name}] ${data.commit.message} (+${data.stats.additions}, -${data.stats.deletions})](${data.html_url})`)
+					output.push(`* ${data.commit.committer.date} - [[${data.commit.committer.name}] ${data.commit.message.split("\n")[0]}](${data.html_url}) (+${data.stats.additions}, -${data.stats.deletions})`)
 
 					return
 				})
