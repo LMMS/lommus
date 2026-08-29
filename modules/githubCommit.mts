@@ -39,7 +39,7 @@ export default class extends BotModule {
 
 			const commitHashes: string[] = []
 
-			const regex = /(?<=github\.com\/)(?:(?<org>[A-Za-z0-9_.-]+)\/(?<repo>[A-Za-z0-9_.-]+)\/commit\/(?<hash>[A-Za-z0-9]+))/
+			const regex = /(?<=github\.com\/)(?:(?<org>[A-Za-z0-9_.-]+)\/(?<repo>[A-Za-z0-9_.-]+)\/commit\/(?<hash>[A-Za-z0-9]+))/g
 
 			const matches = [ ...message.content.matchAll(regex) ]
 
