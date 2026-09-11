@@ -3,7 +3,7 @@ import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 export type CommandObject = Readonly<
 	Record<string, {
 		perms: bigint
-		bypassUserIds: string[]
+		bypassUserIds: number[]
 		handler: (interaction: ChatInputCommandInteraction<CacheType>) => any
 	}>
 >

@@ -1,11 +1,11 @@
-import { BotModule } from './util/module.mjs';
-import { ChannelType, Client, CommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, PermissionsBitField, TextChannel, time, type CacheType } from 'discord.js';
-import { config } from './util/config.mjs';
-import { formatBytes } from 'bytes-formatter';
-import { getGitHubFile } from './util/githubApi.mjs';
-import { LOMMUS } from '../lommus.js';
-import { readFile } from 'node:fs/promises';
-import os from 'node:os';
+import { BotModule } from './util/module.mjs'
+import { ChannelType, Client, CommandInteraction, EmbedBuilder, Events, hideLinkEmbed, MessageFlags, PermissionFlagsBits, PermissionsBitField, TextChannel, time, type CacheType } from 'discord.js'
+import { config } from './util/config.mjs'
+import { formatBytes } from 'bytes-formatter'
+import { getGitHubFile } from './util/githubApi.mjs'
+import { LOMMUS } from '../lommus.js'
+import { readFile } from 'node:fs/promises'
+import os from 'node:os'
 
 import type { CommandObject } from './util/globals.mts'
 
@@ -15,7 +15,7 @@ export default class SlashCommandsModule extends BotModule {
 	logsChannelId: string = "283757917230858240";
 
 	/** The #logs channel */
-	logsChannel: TextChannel;
+	logsChannel: TextChannel
 
 	/**
 	 * Creates an instance of SlashCommandsModule.
@@ -27,11 +27,11 @@ export default class SlashCommandsModule extends BotModule {
 			client,
 			"Slash Commands",
 			"Event handlers for slash commands"
-		);
+		)
 
 		// Precheck logs channel
-		this.logsChannel = this.client.channels.cache.get(this.logsChannelId) as TextChannel;
-		if (this.logsChannel?.partial) this.logsChannel.fetch();
+		this.logsChannel = this.client.channels.cache.get(this.logsChannelId) as TextChannel
+		if (this.logsChannel?.partial) this.logsChannel.fetch()
 	}
 
 	/**
@@ -43,7 +43,7 @@ export default class SlashCommandsModule extends BotModule {
 	 * @returns {boolean}
 	 */
 	private checkPerms(interaction: CommandInteraction<CacheType>, bits: PermissionsBitField, id: string): boolean {
-		return (interaction.memberPermissions?.has(bits) ?? false) || (interaction.user.id === id);
+		return (interaction.memberPermissions?.has(bits) ?? false) || (interaction.user.id === id)
 	}
 
 	/**
@@ -52,11 +52,11 @@ export default class SlashCommandsModule extends BotModule {
 	 * @param interaction The interaction to pass here
 	 */
 	private async rejectUnprivilegedCommand(interaction: CommandInteraction<CacheType>) {
-		const { id, globalName, username } = interaction.user;
+		const { id, globalName, username } = interaction.user
 
-		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral });
+		interaction.reply({ content: "You do not have the permissions to use this command! This incident will be reported.", flags: MessageFlags.Ephemeral })
 
-		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`);
+		return await this.logsChannel.send(`${new Date().toISOString()} Unprivileged user tried to run command '${interaction.commandName}': [${id}] ${username} (${globalName})`)
 	}
 
 	/**
@@ -68,19 +68,19 @@ export default class SlashCommandsModule extends BotModule {
 		/** Get info about the given user */
 		"whois": {
 			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
 				// Get target user
-				const interactionOption = interaction.options.getUser('user');
-				if (!interactionOption || !interaction.guild) return;
-				const targetUser = interaction.guild.members.cache.get(interactionOption.id);
+				const interactionOption = interaction.options.getUser('user')
+				if (!interactionOption || !interaction.guild) return
+				const targetUser = interaction.guild.members.cache.get(interactionOption.id)
 
 				// Make sure target is from server
 				if (!targetUser) {
 					const embed = new EmbedBuilder()
 						.setColor(this.colors.RED)
-						.setDescription('Specified user was not found on this server.');
-					return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+						.setDescription('Specified user was not found on this server.')
+					return await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 				}
 
 				// Build embed
@@ -94,7 +94,7 @@ export default class SlashCommandsModule extends BotModule {
 					.addFields(
 						{ name: 'Most Recent Join', value: (targetUser.joinedAt) ? time(targetUser.joinedAt) : 'Unknown', inline: true },
 						{ name: 'Account Registered', value: time(targetUser.user.createdAt), inline: true },
-					);
+					)
 
 				// Find, sort and display roles of target
 				if (targetUser.roles.cache.size > 1) embed.addFields({
@@ -103,19 +103,19 @@ export default class SlashCommandsModule extends BotModule {
 						.sort((a, b) => b.position - a.position)
 						.map(r => `${r}`)
 						.filter(f => f != '@everyone').join(', ')
-				});
+				})
 
-				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				return await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 			}
 		},
 		/** Get info about the server itself */
 		"server": {
 			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				if (!interaction.guild) return;
+				if (!interaction.guild) return
 
-				const bans = await interaction.guild.bans.fetch();
+				const bans = await interaction.guild.bans.fetch()
 
 				const embed = new EmbedBuilder()
 					.setAuthor({
@@ -136,107 +136,107 @@ export default class SlashCommandsModule extends BotModule {
 						{ name: 'Boost Count', value: `${interaction.guild.premiumSubscriptionCount}`, inline: true },
 						{ name: 'Boost Tier', value: `${interaction.guild.premiumTier}`, inline: true },
 						{ name: 'Bans', value: `${bans.size}`, inline: true },
-					);
+					)
 
-				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				return await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 			}
 		},
 		/** Get info about the bot itself */
 		"bot": {
 			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				const changelog = await readFile('./changelog.txt', { 'encoding': 'utf-8' });
-				const readme = await readFile('./README.md', { 'encoding': 'utf-8' });
+				const changelog = await readFile('./changelog.txt', { 'encoding': 'utf-8' })
+				const readme = await readFile('./README.md', { 'encoding': 'utf-8' })
 
 				const embed = new EmbedBuilder()
 					// .setColor(interaction.guild.me.displayHexColor)
 					.setDescription(`**README.md:**\n\`\`\`md\n${readme.substring(0, 1000)}\n\`\`\`\n`
-						+ changelog.substring(0, 1000));
+						+ changelog.substring(0, 1000))
 
-				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				return await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 			}
 		},
 		/** Get and post the channel's topic */
 		"topic": {
 			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
 				const embed = new EmbedBuilder()
 					.setColor(this.colors.GREEN)
-					.setDescription('No topic set for this channel.');
+					.setDescription('No topic set for this channel.')
 
-				if (interaction.channel && 'topic' in interaction.channel) embed.setDescription(interaction.channel.topic);
+				if (interaction.channel && 'topic' in interaction.channel) embed.setDescription(interaction.channel.topic)
 
-				return await interaction.reply({ embeds: [embed] });
+				return await interaction.reply({ embeds: [ embed ] })
 			}
 		},
 		/** Post info and the link to nightly builds */
 		"nightly": {
 			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
 				const embed = new EmbedBuilder()
 					.setColor(this.colors.GREEN)
 					.setTitle('Nightly builds')
 					.setURL('https://lmms.io/download')
-					.setDescription('Nightly versions are now available directly on the main LMMS download page! \n[Go to download page.](https://lmms.io/download) \n\nTreat nightly builds with utmost care. Back up any projects before loading and saving them in new versions.');
+					.setDescription('Nightly versions are now available directly on the main LMMS download page! \n[Go to download page.](https://lmms.io/download) \n\nTreat nightly builds with utmost care. Back up any projects before loading and saving them in new versions.')
 
-				if (interaction.channel?.isSendable()) await interaction.channel.send({ embeds: [embed] });
+				if (interaction.channel?.isSendable()) await interaction.channel.send({ embeds: [ embed ] })
 
-				await interaction.deleteReply();
+				await interaction.deleteReply()
 			}
 		},
 		/** Get info and snapshot of a file */
 		"file": {
 			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
 				const options = {
 					orgPlusRepo: interaction.options.getString('org') ?? 'LMMS',
 					repo: interaction.options.getString('repo') ?? 'lmms',
 					filePath: interaction.options.getString('path', true)
-				};
+				}
 
-				const maybeOrgPlusRepo = options.orgPlusRepo.split('/');
+				const maybeOrgPlusRepo = options.orgPlusRepo.split('/')
 				if (maybeOrgPlusRepo.length > 1)
 					// @ts-expect-error
-					[options.orgPlusRepo, options.repo] = maybeOrgPlusRepo;
-				const fileOrNum = await getGitHubFile(options.orgPlusRepo, options.repo, options.filePath);
+					[ options.orgPlusRepo, options.repo ] = maybeOrgPlusRepo
+				const fileOrNum = await getGitHubFile(options.orgPlusRepo, options.repo, options.filePath)
 
 
 				if (typeof fileOrNum === 'number') {
-					let httpRejectReason;
+					let httpRejectReason
 					switch (fileOrNum) {
 						case 429:
-							httpRejectReason = "Hold your horses, the GitHub API is not pleased.";
-							break;
+							httpRejectReason = "Hold your horses, the GitHub API is not pleased."
+							break
 
 						case 403:
-							httpRejectReason = "LoMMuS cannot access the given resource";
-							break;
+							httpRejectReason = "LoMMuS cannot access the given resource"
+							break
 
 						case 404:
-							httpRejectReason = "Not found. Please re-check your options";
-							break;
+							httpRejectReason = "Not found. Please re-check your options"
+							break
 
 						default:
-							httpRejectReason = "There was an HTTP rejection/failure on your request";
-							break;
+							httpRejectReason = "There was an HTTP rejection/failure on your request"
+							break
 					}
 
 					const embed = new EmbedBuilder()
 						.setTitle(`HTTP ${fileOrNum}`)
 						.setDescription(httpRejectReason)
-						.setColor(this.colors.RED);
+						.setColor(this.colors.RED)
 
-					return interaction.reply({ embeds: [embed] });
+					return interaction.reply({ embeds: [ embed ] })
 				}
 
-				const maybeFileExt = options.filePath.split('.');
-				const fileType = (maybeFileExt.length > 1) ? maybeFileExt.at(-1) : '';
+				const maybeFileExt = options.filePath.split('.')
+				const fileType = (maybeFileExt.length > 1) ? maybeFileExt.at(-1) : ''
 
 				const embed = new EmbedBuilder()
 					.setTitle(`(${options.orgPlusRepo}/${options.repo}) ${fileOrNum.name}`)
@@ -247,9 +247,9 @@ export default class SlashCommandsModule extends BotModule {
 						{ name: 'Path', value: `\`${fileOrNum.path}\`` },
 						{ name: 'Size (b)', value: fileOrNum.size.toString(), inline: true },
 						{ name: 'SHA-1', value: `\`${fileOrNum.sha}\``, inline: true }
-					]);
+					])
 
-				return interaction.reply({ embeds: [embed] });
+				return interaction.reply({ embeds: [ embed ] })
 			}
 		}
 	});
@@ -260,19 +260,19 @@ export default class SlashCommandsModule extends BotModule {
 	 * @private
 	 */
 	private debugCommands: CommandObject = Object.freeze({
-		/** Dumps a lot of info abou the bot */
+		/** Dumps a lot of info about the bot */
 		"dump": {
 			perms: PermissionFlagsBits.KickMembers,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
 				const loadedLOMMUSModules = Array.from(LOMMUS.registeredModules)
 					.map((mod, i) => `${i + 1}. \`${mod.name}\`: *${mod.description}*`)
-					.join('\n');
+					.join('\n')
 
 				const LOMMUSIntents = LOMMUS.client.options.intents
 					.toArray()
 					.map((intent, i) => `${i + 1}. \`${intent}\``)
-					.join('\n');
+					.join('\n')
 
 				const embed = new EmbedBuilder()
 					.addFields([
@@ -290,95 +290,95 @@ export default class SlashCommandsModule extends BotModule {
 						{ name: 'Loaded modules', value: loadedLOMMUSModules },
 					])
 					.setAuthor({ name: `${new Date().toISOString()}` })
-					.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` });
+					.setFooter({ text: `Mem usage (resident set size): ${formatBytes(process.memoryUsage().rss)}` })
 
-				if (interaction.options.getBoolean('post', false)) return await interaction.reply({ embeds: [embed] });
-				return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				if (interaction.options.getBoolean('post', false)) return await interaction.reply({ embeds: [ embed ] })
+				return await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 			}
 		},
 		/** Ping the bot */
 		"ping": {
 			perms: PermissionFlagsBits.SendMessages,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				const pingReceivedTime = Date.now();
+				const pingReceivedTime = Date.now()
 
 				if (interaction.isRepliable()) try {
 					interaction.reply('Measuring...').then(async (msg) => {
-						await msg.edit(`:ping_pong: Pong \`${pingReceivedTime - msg.createdTimestamp}\`ms\nAPI latency: \`${this.client.ws.ping}\`ms\nTotal latency: \`${this.client.ws.ping + (pingReceivedTime - msg.createdTimestamp)}\`ms`);
-					});
+						await msg.edit(`:ping_pong: Pong \`${pingReceivedTime - msg.createdTimestamp}\`ms\nAPI latency: \`${this.client.ws.ping}\`ms\nTotal latency: \`${this.client.ws.ping + (pingReceivedTime - msg.createdTimestamp)}\`ms`)
+					})
 				} catch (error) {
-					await interaction.reply('Failed to get ping data');
+					await interaction.reply('Failed to get ping data')
 				}
 			}
 		},
 		/** Toggle a feature on/off. Currently noop */
 		"toggle": {
 			perms: PermissionFlagsBits.Administrator,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				if (!interaction.isChatInputCommand()) return;
+				if (!interaction.isChatInputCommand()) return
 
-				const toggleType = interaction.options.getString('function');
+				const toggleType = interaction.options.getString('function')
 
 				// noop
-				return;
+				return
 			}
 		},
 		/** Kill the bot, don't revive */
 		"kill": {
 			perms: PermissionFlagsBits.BanMembers,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				console.log("Killing bot...");
-				if (!interaction.isChatInputCommand()) return;
+				console.log("Killing bot...")
+				if (!interaction.isChatInputCommand()) return
 
 				const embed = new EmbedBuilder()
 					.setAuthor({ name: 'Exiting bot', iconURL: (interaction.guild) ? interaction.guild.iconURL({ size: 64 }) ?? "" : "" })
 					.setColor(this.colors.RED)
-					.setDescription('Goodbye world.');
+					.setDescription('Goodbye world.')
 
-				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 
-				return setTimeout(() => process.exit(0), 10);
+				return setTimeout(() => process.exit(0), 10)
 			}
 		},
 		/** Reloads all modules. Unviable until event registration refactor */
 		"reload": {
 			perms: PermissionFlagsBits.KickMembers,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				console.log("Reloading modules...");
+				console.log("Reloading modules...")
 
 				const embed = new EmbedBuilder()
 					.setTitle('Reloading modules')
 					.setColor(this.colors.GRAY)
-					.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded');
+					.setDescription('Reloading modules. Please wait a few seconds for all modules to be reloaded')
 
-				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 
-				await LOMMUS.loadESModules();
+				await LOMMUS.loadESModules()
 			}
 		},
 		/** Kill the bot, then revive it */
 		"restart": {
 			perms: PermissionFlagsBits.BanMembers,
-			bypassUserIds: [config.ownerId],
+			bypassUserIds: [ config.ownerId ],
 			handler: async (interaction) => {
-				console.log("Restarting...");
+				console.log("Restarting...")
 
-				if (!interaction.channel || !interaction.guild) return;
+				if (!interaction.channel || !interaction.guild) return
 
 				const embed = new EmbedBuilder()
 					.setAuthor({ name: 'Restarting', iconURL: interaction.guild.iconURL({ size: 64 }) ?? "" })
 					.setColor(this.colors.RED)
-					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything');
+					.setDescription('Bot is restarting. Please wait a few seconds for the bot to reload everything')
 
 				// if we can reply, do it
 				// if not, leave it be
-				if (interaction.isRepliable()) await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+				if (interaction.isRepliable()) await interaction.reply({ embeds: [ embed ], flags: MessageFlags.Ephemeral })
 
-				return setTimeout(() => process.exit(1), 1000);
+				return setTimeout(() => process.exit(1), 1000)
 			}
 		},
 	})
@@ -393,17 +393,17 @@ export default class SlashCommandsModule extends BotModule {
 			/** Say something as the bot */
 			"say": {
 				perms: PermissionFlagsBits.KickMembers,
-				bypassUserIds: [config.ownerId],
+				bypassUserIds: [ config.ownerId ],
 				handler: async (interaction) => {
 					if (
 						!interaction.channel?.isSendable()
 						|| !interaction.isRepliable()
-					) return;
+					) return
 
 					const options = {
 						msg: interaction.options.getString('message', true),
 						channel: interaction.options.getChannel('channel', false) ?? interaction.channel
-					};
+					}
 
 					if (
 						options.channel.type !== ChannelType.GuildText
@@ -412,14 +412,14 @@ export default class SlashCommandsModule extends BotModule {
 					) return await interaction.reply({
 						content: "I can't send messages in that channel",
 						flags: MessageFlags.Ephemeral
-					});
+					})
 
-					await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+					await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
 					// @ts-expect-error
-					await options.channel.send(options.msg);
+					await options.channel.send(options.msg)
 
-					return interaction.deleteReply();
+					return interaction.deleteReply()
 				}
 			},
 		},
@@ -434,21 +434,21 @@ export default class SlashCommandsModule extends BotModule {
 				!interaction
 				|| !interaction.channel
 				|| !interaction.guild
-			) throw new Error("Interaction is not configured correctly! Has slash commands been registered yet?");
+			) throw new Error("Interaction is not configured correctly! Has slash commands been registered yet?")
 
 			// Screen bad command interactions
-			if (!interaction.isChatInputCommand()) return;
+			if (!interaction.isChatInputCommand()) return
 
-			const cmd = this.commandList[interaction.commandName];
-			if (!cmd) return;
+			const cmd = this.commandList[ interaction.commandName ]
+			if (!cmd) return
 
 			// check perms
 			if (
 				interaction.memberPermissions?.has(cmd.perms)
-				|| cmd.bypassUserIds.includes(interaction.user.id)
+				|| cmd.bypassUserIds.includes(Number(interaction.user.id))
 			) {
-				cmd.handler(interaction);
-			} else this.rejectUnprivilegedCommand(interaction);
-		});
+				cmd.handler(interaction)
+			} else this.rejectUnprivilegedCommand(interaction)
+		})
 	}
 }
