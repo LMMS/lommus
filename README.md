@@ -18,14 +18,6 @@ Feel free to contribute and make PRs.
 
 The old README is located in [README.old.md](README.old.md), which displays notes and commands available at the time.
 
-<div align="center">
-
-*LoMMuS runs on DigitalOcean. Click the button below for more information, or access this link: https://m.do.co/c/c77894a32e56. Both will utilize our referral code.*
-
-[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=c77894a32e56&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
-
-</div>
-
 ## Developing
 
 The bot uses standard Node.JS APIs and is intended to run normally everywhere using any Node-like runtimes like Deno and Bun. You may use other runtimes/package managers while developing LoMMuS, just make sure to ensure compatibility with standard Node.JS.
