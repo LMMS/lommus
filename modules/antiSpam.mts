@@ -45,7 +45,8 @@ export default class AntiSpamModule extends BotModule {
 		super(
 			client,
 			"Anti Spam",
-			"we're vegetarians"
+			"we're vegetarians",
+			{ disabled: true }
 		)
 	}
 
