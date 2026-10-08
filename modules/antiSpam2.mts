@@ -1,18 +1,17 @@
-import { blockQuote, Client, EmbedBuilder, Events, TextChannel } from "discord.js"
+import { blockQuote, Client, EmbedBuilder, Events, Message, TextChannel, type OmitPartialGroupDMChannel } from "discord.js"
 import { BotModule } from "./util/module.mts"
 import { hash } from "node:crypto"
 
 interface UserBufferData {
 	lastChannelId: string
 	lastTimestamp: number
-	// lastHash: bigint
-	lastHash: string
+	messages: Set<OmitPartialGroupDMChannel<Message<boolean>>>
 	hits: number
 }
 
 export default class extends BotModule {
 	private readonly bufferCleanupIntervalMs = 2000 as const
-	private readonly countAsSpamThresholdMs = 1000 as const
+	private readonly countAsSpamThresholdMs = 2000 as const
 	private readonly hitThreshold = 3 as const
 
 	/**
@@ -20,7 +19,7 @@ export default class extends BotModule {
 	 */
 	private readonly evidenceChannelId = '486590751032082462' as const;
 
-	private userBuffer: Map<string, UserBufferData> = new Map()
+	private buffer: Record<string, UserBufferData> = {}
 
 	constructor(bot: Client) {
 		super(
@@ -38,26 +37,22 @@ export default class extends BotModule {
 
 			if (msg.system || msg.author.bot || msg.author.id === this.client.user!.id) return
 
-			const user = this.userBuffer.getOrInsert(msg.author.id, {
+			const user = this.buffer[ msg.author.id ] ?? {
 				lastChannelId: msg.channel.id,
 				lastTimestamp: msg.createdTimestamp,
-				// lastHash: Bun.hash.rapidhash(msg.content),
-				lastHash: hash('sha-1', msg.content),
+				messages: new Set([ msg ]),
 				hits: 0
-			})
+			}
 
 
 			if (
 				(msg.createdTimestamp - user.lastTimestamp) < this.countAsSpamThresholdMs
 				&& user.lastChannelId !== msg.channel.id
 			) {
-				this.userBuffer.set(msg.author.id, {
-					lastChannelId: msg.channel.id,
-					lastTimestamp: msg.createdTimestamp,
-					// lastHash: Bun.hash.rapidhash(msg.content),
-					lastHash: hash('sha-1', msg.content),
-					hits: user.hits + 1
-				})
+				this.buffer[ msg.author.id ]!.lastChannelId = msg.channel.id
+				this.buffer[ msg.author.id ]!.lastTimestamp = msg.createdTimestamp
+				this.buffer[ msg.author.id ]!.hits++
+				this.buffer[ msg.author.id ]!.messages.add(msg)
 			}
 
 			if (user.hits >= this.hitThreshold) {
@@ -83,18 +78,27 @@ export default class extends BotModule {
 
 	private cleanup() {
 		return setInterval(() => {
-			for (const [ id, userData ] of this.userBuffer) {
-				if (
-					(Date.now() - userData.lastTimestamp)
-					> this.countAsSpamThresholdMs
-				)
-					this.userBuffer.delete(id)
+			for (const [ id, userData ] of Object.entries(this.buffer)) {
+				if ((Date.now() - userData.lastTimestamp) > this.countAsSpamThresholdMs) delete this.buffer[ id ]
 			}
 		}, this.bufferCleanupIntervalMs)
 	}
 
 	private action(userId: string) {
-		this.userBuffer.delete(userId)
+		const buf = this.buffer[ userId ]
+
+		if (!buf) {
+			console.error(`Cannot find user ID ${userId} in user buffer`)
+			return
+		}
+
+		// buf.messages.values().next().value?.member?.kick("Automatic anti-spam protection. Rejoin when you've recovered your account.")
+
+		// for (const message of buf.messages) {
+		// 	message.delete()
+		// }
+
+		delete this.buffer[ userId ]
 		return console.warn(`${userId} triggered anti-spam.`)
 	}
 }
