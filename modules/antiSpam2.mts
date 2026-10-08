@@ -1,6 +1,6 @@
 import { blockQuote, Client, EmbedBuilder, Events, Message, TextChannel, type OmitPartialGroupDMChannel } from "discord.js"
 import { BotModule } from "./util/module.mts"
-import { hash } from "node:crypto"
+// import { hash } from "node:crypto"
 
 interface UserBufferData {
 	lastChannelId: string
@@ -13,6 +13,7 @@ export default class extends BotModule {
 	private readonly bufferCleanupIntervalMs = 2000 as const
 	private readonly countAsSpamThresholdMs = 2000 as const
 	private readonly hitThreshold = 3 as const
+	private readonly cleanupInterval: NodeJS.Timeout
 
 	/**
 	 * The #evidence channel ID
@@ -28,7 +29,7 @@ export default class extends BotModule {
 			"we're vegans (lommus-v2 backport)"
 		)
 
-		this.cleanup()
+		this.cleanupInterval = this.cleanup()
 	}
 
 	init() {
@@ -37,13 +38,13 @@ export default class extends BotModule {
 
 			if (msg.system || msg.author.bot || msg.author.id === this.client.user!.id) return
 
-			const user = this.buffer[ msg.author.id ] ?? {
+			const user = this.buffer[msg.author.id] ?? {
 				lastChannelId: msg.channel.id,
 				lastTimestamp: msg.createdTimestamp,
 				messages: new Set([ msg ]),
 				hits: 0
 			}
-
+			this.buffer[msg.author.id] = user
 
 			if (
 				(msg.createdTimestamp - user.lastTimestamp) < this.countAsSpamThresholdMs
