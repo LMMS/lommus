@@ -93,11 +93,11 @@ export default class extends BotModule {
 			return
 		}
 
-		// buf.messages.values().next().value?.member?.kick("Automatic anti-spam protection. Rejoin when you've recovered your account.")
+		buf.messages.values().next().value?.member?.kick("Automatic anti-spam protection. Rejoin when you've recovered your account.")
 
-		// for (const message of buf.messages) {
-		// 	message.delete()
-		// }
+		for (const message of buf.messages) {
+			message.delete()
+		}
 
 		delete this.buffer[ userId ]
 		return console.warn(`${userId} triggered anti-spam.`)
