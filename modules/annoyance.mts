@@ -39,7 +39,7 @@ export default class AnnoyanceModule extends BotModule {
 				return message.reply({ embeds: [embed] });
 			}
 
-			if (message.content.includes('amogus')) return message.react(this.lomsusEmojiId);
+			if (message.content.toLowerCase().includes('amogus')) return message.react(this.lomsusEmojiId);
 
 			if (message.content.includes('ඞ') || message.content.includes('ඩ')) {
 				const rand = ['An Impostor', 'not The Impostor', 'ejected'];
